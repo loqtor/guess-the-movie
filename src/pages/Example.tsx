@@ -3,33 +3,37 @@ import * as Redux from 'redux';
 
 import { connect } from "react-redux";
 
-import { getClickCount } from "../store/selectors/example";
-import { countClick } from "../store/actions/example";
+import { getMovies } from "../store/selectors/movies";
+import { getMovies as getMoviesAction } from "../store/actions/movies";
 
 import { Link } from 'react-router-dom';
 import { RootState } from '../store/reducers';
+import { Movie } from '../store/reducers/movies';
 
 export interface OwnProps {}
 
 interface StateProps {
-  clickCount: number;
+  movies: Movie[];
 }
      
 interface DispatchProps {
-  countClick: () => void
+  getMovies: () => void
 }
  
 type Props = StateProps & DispatchProps & OwnProps;
 
 class ExampleComponent extends React.Component<Props, {}> {
   render() {
-    const { clickCount, countClick } = this.props;
+    const { movies, getMovies } = this.props;
 
     return (
       <>
         <h1>This is an example extra route.</h1>
-        <p>{clickCount} times clicked.</p>
-        <button onClick={countClick}>Click to count!</button>
+        <p>This is where we'll show the movies</p>
+        {movies && movies.length > 0 && (
+          movies.map((movie: Movie) => (<p>{movie.title}</p>))
+        )}
+        <button onClick={getMovies}>Click to request more movies!</button>
         <Link to="/">Back to home</Link>
       </>
     )
@@ -38,14 +42,14 @@ class ExampleComponent extends React.Component<Props, {}> {
  
 function mapStateToProps(state: RootState): StateProps {
   return {
-    clickCount: getClickCount(state),
+    movies: getMovies(state),
   };
 }
  
 function mapDispatchToProps(dispatch: Redux.Dispatch<any>): DispatchProps {
   return {
-    countClick: () => {
-      return dispatch(countClick())
+    getMovies: () => {
+      return dispatch(getMoviesAction());
     },
   };
 }

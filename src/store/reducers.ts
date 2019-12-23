@@ -1,10 +1,10 @@
 import { combineReducers } from 'redux'
-import { ExampleState, example } from './reducers/example';
+import { MoviesState, movies } from './reducers/movies';
 
 export const RootReducer = combineReducers({
-  example,
+  movies,
 });
 
 export type RootState = {
-  example: ExampleState
+  movies: MoviesState
 };
