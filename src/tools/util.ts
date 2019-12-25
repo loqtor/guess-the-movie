@@ -14,3 +14,7 @@ export const makeRequest = (url: string, options: any) => {
   return fetch(request)
     .then((res) => res.json());
 }
+
+export const generateRandomNumberFromRange = (max: number, min: number) => {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
