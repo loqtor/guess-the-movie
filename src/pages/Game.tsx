@@ -9,7 +9,7 @@ import { getMovies as getMoviesAction } from "../store/actions/movies";
 import { RootState } from '../store/reducers';
 import { Movie } from '../store/reducers/movies';
 
-import { IMAGE_BASE_URL } from "../constants/config";
+import { IMAGE_BASE_URL, IMAGE_WIDTH } from "../constants/config";
 import { Timer } from '../components/game/Timer';
 import { GameStatus } from '../constants/game';
 import { PhotoCropper } from '../components/game/PhotoCropper';
@@ -83,7 +83,11 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
           movies.map((movie: Movie) => (
             <>
               <p key={`title-${movie.id}`}>{movie.title}</p>
-              <PhotoCropper key={`image-${movie.id}`} imageUrl={`${IMAGE_BASE_URL}${movie.backdrop_path}`}/>
+              <PhotoCropper 
+                key={`image-${movie.id}`} 
+                imageUrl={`${IMAGE_BASE_URL}${movie.backdrop_path}`}
+                expectedImageWidth={IMAGE_WIDTH}
+              />
             </>
           ))
         )}
