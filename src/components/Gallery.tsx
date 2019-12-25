@@ -15,7 +15,7 @@ export interface OwnState {
   swiper?: Swiper;
 }
 
-class GameComponent extends React.Component<OwnProps, OwnState> {
+export class Gallery extends React.Component<OwnProps, OwnState> {
   swiperContainer!: HTMLDivElement;
 
   constructor(props: OwnProps) {
