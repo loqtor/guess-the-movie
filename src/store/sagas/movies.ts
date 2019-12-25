@@ -13,10 +13,11 @@ function* getMovies() {
   const page = Math.floor(Math.random() * (MAX_PAGE - MIN_PAGE + 1)) + MIN_PAGE;
 
   try {
-    const movies: Movie[] = yield call(getMoviesApi, page);
-    yield put({ type: MOVIES_TYPES.GET_MOVIES_SUCCESS, payload: { movies } });
+    const movies: { results: Movie[] } = yield call(getMoviesApi, page);
+    yield put({ type: MOVIES_TYPES.GET_MOVIES_SUCCESS, payload: { movies: movies.results } });
   } catch (error) {
-    
+    console.error('Error trying to get movies from the API: ', error);
+    yield put({ type: MOVIES_TYPES.GET_MOVIES_FAIL, payload: { error } });
   }
 }
 

@@ -11,7 +11,7 @@ import { RootReducer } from "./store/reducers";
 import * as serviceWorker from './serviceWorker';
 
 import { Home } from '../src/pages/Home';
-import { Example } from '../src/pages/Example';
+import { Game } from './pages/Game';
 import rootSaga from './store/sagas';
 
 const sagaMiddleware = createSagaMiddleware();
@@ -19,12 +19,14 @@ const store = createStore(
   RootReducer, 
   composeWithDevTools(applyMiddleware(sagaMiddleware)));
 
+sagaMiddleware.run(rootSaga);
+
 ReactDOM.render(
   <Provider store={store}>
     <Router>
       <Switch>
         <Route exact path="/" component={Home} />
-        <Route path="/example" component={Example} />
+        <Route path="/game" component={Game} />
       </Switch>
     </Router>
   </Provider>
@@ -34,5 +36,3 @@ ReactDOM.render(
 // unregister() to register() below. Note this comes with some pitfalls.
 // Learn more about service workers: https://bit.ly/CRA-PWA
 serviceWorker.unregister();
-
-sagaMiddleware.run(rootSaga);

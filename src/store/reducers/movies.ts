@@ -1,17 +1,30 @@
 import { MOVIES_TYPES } from "../actions/movies";
 
 export type Movie = {
-  title: string;
+  popularity: number,
+  vote_count: number,
+  video: string,
+  poster_path: string,
+  id: string,
+  adult: boolean,
+  backdrop_path: string,
+  original_language: string,
+  original_title: string,
+  genre_ids: number[],
+  title: string,
+  vote_average: number,
+  overview: string,
+  release_date: string, // format YYYY-MM-DD
 }
 
 export type MoviesState = {
   movies: Movie[];
-  loadingMovies: boolean;
+  isLoadingMovies: boolean;
 }
 
 const initialState: MoviesState = {
   movies: [],
-  loadingMovies: false,
+  isLoadingMovies: false,
 };
 
 export const movies = (state = initialState, action: { payload: { movies: Movie[], error: string }, type: any }) => {
@@ -19,18 +32,18 @@ export const movies = (state = initialState, action: { payload: { movies: Movie[
     case MOVIES_TYPES.GET_MOVIES: 
       return {
         ...state,
-        loadingMovies: true,
+        isLoadingMovies: true,
       };
     case MOVIES_TYPES.GET_MOVIES_SUCCESS:
       return {
         ...state,
-        loadingMovies: false,
+        isLoadingMovies: false,
         movies: action.payload.movies,
       };
     case MOVIES_TYPES.GET_MOVIES_FAIL:
       return {
         ...state,
-        loadingMovies: false,
+        isLoadingMovies: false,
         error: action.payload.error,
       };
 
