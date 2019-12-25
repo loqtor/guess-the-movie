@@ -10,8 +10,14 @@ import { RootState } from '../store/reducers';
 import { Movie } from '../store/reducers/movies';
 
 import { IMAGE_BASE_URL } from "../constants/config";
+import { Timer } from '../components/game/Timer';
+import { GameStatus } from '../constants/game';
 
 export interface OwnProps {}
+
+interface OwnStateProps {
+  status: GameStatus;
+}
 
 interface StateProps {
   movies: Movie[];
@@ -24,14 +30,34 @@ interface DispatchProps {
  
 type Props = StateProps & DispatchProps & OwnProps;
 
-class GameComponent extends React.Component<Props, {}> {
+class GameComponent extends React.Component<Props, OwnStateProps> {
+  constructor(props: Props) {
+    super(props);
+
+    this.state = {
+      status: GameStatus.PLAYING,
+    };
+  }
+
   componentDidMount() {
     const { getMovies } = this.props;
 
     getMovies();
   }
 
+  finishGame = () => {
+    this.setState({
+      status: GameStatus.FINISHED,
+    });
+  }
+
   render() {
+    const { status } = this.state;
+
+    if (status === GameStatus.FINISHED) {
+      return (<p>Time's up!</p>);
+    }
+
     const { isLoadingMovies, movies } = this.props;
 
 
@@ -49,6 +75,7 @@ class GameComponent extends React.Component<Props, {}> {
 
     return (
       <>
+        <Timer time={10} onTimeUp={this.finishGame} />
         <h1>This is where the game will happen.</h1>
         <p>This is where we'll show the movies</p>
         {movies && movies.length > 0 && (
