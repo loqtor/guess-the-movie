@@ -13,6 +13,7 @@ import { IMAGE_BASE_URL, IMAGE_WIDTH } from "../constants/config";
 import { Timer } from '../components/game/Timer';
 import { GameStatus } from '../constants/game';
 import { PhotoCropper } from '../components/game/PhotoCropper';
+import { Gallery } from '../components/Gallery';
 
 export interface OwnProps {}
 
@@ -79,18 +80,21 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
         <Timer time={10000} onTimeUp={this.finishGame} />
         <h1>This is where the game will happen.</h1>
         <p>This is where we'll show the movies</p>
-        {movies && movies.length > 0 && (
-          movies.map((movie: Movie) => (
-            <>
-              <p key={`title-${movie.id}`}>{movie.title}</p>
-              <PhotoCropper 
-                key={`image-${movie.id}`} 
-                imageUrl={`${IMAGE_BASE_URL}${movie.backdrop_path}`}
-                expectedImageWidth={IMAGE_WIDTH}
-              />
-            </>
-          ))
-        )}
+        
+        <Gallery>
+          {movies && movies.length > 0 && (
+              movies.map((movie: Movie) => (
+                <>
+                  <p key={`title-${movie.id}`}>{movie.title}</p>
+                  <PhotoCropper 
+                    key={`image-${movie.id}`} 
+                    imageUrl={`${IMAGE_BASE_URL}${movie.poster_path}`}
+                    expectedImageWidth={IMAGE_WIDTH}
+                  />
+                </>
+              ))
+            )}
+          </Gallery>
         
       </>
     )
