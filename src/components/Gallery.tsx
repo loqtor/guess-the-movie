@@ -62,10 +62,14 @@ export class Gallery extends React.Component<OwnProps, OwnState> {
     const { currentSlide } = this.state;
     const { currentSlide: nextSlide } = nextProps;
 
-    if (nextSlide || nextSlide === 0 && currentSlide !== nextSlide) {
+    if (currentSlide !== nextSlide) {
       const { swiper } = this.state;
 
-      swiper?.slideTo(nextSlide);
+      swiper?.slideTo(
+        nextSlide !== 0 && !nextSlide ?
+          currentSlide :
+          nextSlide
+        );
     }
   }
 
