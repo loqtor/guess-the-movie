@@ -2,10 +2,7 @@ import React from 'react';
 import { Dispatch } from 'redux';
 import { connect } from "react-redux";
 
-// import { SpeechRecognizer } from 'react-speech-recognizer-component';
-import { SpeechRecognizer } from '../components/SpeechRecognizer';
-
-import { getMovies, isLoadingMovies } from "../store/selectors/movies";
+import { getMovies, isLoadingMovies, getExtraMovies } from "../store/selectors/movies";
 import { getMovies as getMoviesAction } from "../store/actions/movies";
 
 import { RootState } from '../store/reducers';
@@ -21,10 +18,13 @@ export interface OwnProps {}
 
 interface OwnStateProps {
   status: GameStatus;
+  currentMovie: number;
+  extraMovies: number[];
 }
 
 interface StateProps {
   movies: Movie[];
+  extraMovies: Movie[];
   isLoadingMovies: boolean;
 }
      
@@ -40,6 +40,8 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
 
     this.state = {
       status: GameStatus.PLAYING,
+      currentMovie: 0,
+      extraMovies: [0, 1],
     };
   }
 
@@ -95,12 +97,6 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     return (
       <>
         <Timer time={10000} onTimeUp={this.finishGame} />
-        <SpeechRecognizer
-          startSpeechRecognition={true}
-          onResult={this.onResult}
-          onStart={this.onStart}
-          onError={this.onError}
-        />
         <Gallery>
           {movies && movies.length > 0 && (
               movies.map((movie: Movie) => (
@@ -124,6 +120,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
 function mapStateToProps(state: RootState): StateProps {
   return {
     movies: getMovies(state),
+    extraMovies: getExtraMovies(state),
     isLoadingMovies: isLoadingMovies(state),
   };
 }
