@@ -2,7 +2,8 @@ import React from 'react';
 import { Dispatch } from 'redux';
 import { connect } from "react-redux";
 
-import { SpeechRecognizer } from 'react-speech-recognizer-component';
+// import { SpeechRecognizer } from 'react-speech-recognizer-component';
+import { SpeechRecognizer } from '../components/SpeechRecognizer';
 
 import { getMovies, isLoadingMovies } from "../store/selectors/movies";
 import { getMovies as getMoviesAction } from "../store/actions/movies";
