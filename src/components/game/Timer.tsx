@@ -10,6 +10,8 @@ interface IState {
 }
 
 export const Timer = class Timer extends Component<IProps, IState> {
+  timeout!: number;
+
   constructor(props: IProps) {
     super(props);
 
@@ -18,19 +20,25 @@ export const Timer = class Timer extends Component<IProps, IState> {
     };
   }
 
+  clearTimeout = () => {
+    window.clearTimeout(this.timeout);
+  }
+
   tickTimer = () => {
     const { timeLeft } = this.state;
 
     this.setState({
       timeLeft: timeLeft - 1,
     }, () => {
-      setTimeout(() => {
+      this.timeout = window.setTimeout(() => {
         if (timeLeft > 1) {
           this.tickTimer();
         } else {
           const { onTimeUp } = this.props;
 
           onTimeUp();
+          
+          this.clearTimeout();
         }
       }, 1000);
     });
@@ -42,9 +50,13 @@ export const Timer = class Timer extends Component<IProps, IState> {
      * before the game starts (i.e.: if the time is 60 the user would
      * only see from 59 ahead)
      */
-    setTimeout(() => {
+    this.timeout = window.setTimeout(() => {
       this.tickTimer();
     }, 1000);
+  }
+
+  componentWillUnmount() {
+    this.clearTimeout();
   }
 
   render() {
