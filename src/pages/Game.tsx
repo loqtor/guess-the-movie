@@ -1,7 +1,8 @@
 import React from 'react';
 import { Dispatch } from 'redux';
-
 import { connect } from "react-redux";
+
+import { SpeechRecognizer } from 'speech-recognizer';
 
 import { getMovies, isLoadingMovies } from "../store/selectors/movies";
 import { getMovies as getMoviesAction } from "../store/actions/movies";
@@ -47,6 +48,21 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     getMovies();
   }
 
+  onStart = (evt: any) => {
+    console.log('onStart evt: ', evt);
+    debugger;
+  }
+
+  onResult = (evt: any) => {
+    console.log('onResult evt: ', evt);
+    debugger;
+  }
+
+  onError = (evt: any) => {
+    console.log('onError evt: ', evt);
+    debugger;
+  }
+
   finishGame = () => {
     this.setState({
       status: GameStatus.FINISHED,
@@ -78,9 +94,12 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     return (
       <>
         <Timer time={10000} onTimeUp={this.finishGame} />
-        <h1>This is where the game will happen.</h1>
-        <p>This is where we'll show the movies</p>
-        
+        <SpeechRecognizer
+          startSpeechRecognition={true}
+          onResult={this.onResult}
+          onStart={this.onStart}
+          onError={this.onError}
+        />
         <Gallery>
           {movies && movies.length > 0 && (
               movies.map((movie: Movie) => (
