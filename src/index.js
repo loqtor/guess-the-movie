@@ -1,4 +1,5 @@
 import React from 'react';
+import './styles/app.scss';
 import ReactDOM from 'react-dom';
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import { composeWithDevTools } from 'redux-devtools-extension';
