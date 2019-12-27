@@ -1,4 +1,29 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Guess the Movie
+
+Multiple choice movies questionnaire game. Shows a movie poster and the user has to select the right one from three different choices.
+
+## Why?
+
+It started as a way to experiment with the SpeechRecognition API (people would answer the questions by saying the movie name) by using a [React Component](https://github.com/loqtor/react-speech-recognizer) I put together for that, but after learning (the hard way) that it no longer seems to work on Chrome (haven't tried Canary yet) I just continued to finished the game using standard interaction and made the game a multiple choice questionnaire.
+
+## How?
+
+I used [Movie Database](https://www.themoviedb.org/) API for this. The application gets two random sets of movies from the API and mix them up to generate a questionnaire.
+
+The first set of movies will be the ones whose poster would be used and the right answers to the questionnaire, while the second one is where the incorrect options come from.
+
+## Technologies used
+
+The application is built using my [boilerplate](https://github.com/loqtor/react-boilerplate) (based on [Create React App](https://github.com/facebook/create-react-app)) with `redux` and `redux-saga` for state management and effects handling (or whatever you'd like to call it).
+
+## What's next?
+
+1. Add the possibility to show _bonus_ questions to the user (i.e.: After answering 3 in a row get an extra question).
+2. Profile - Let the user create an account.
+3. Challenge - Share your questionnaire with a friend so you can compete with him.
+4. Keep an eye on `SpeechRecognition` and just reimplement the thing if it starts working.
+
+# Create React App stuff below.
 
 ## Available Scripts
 
