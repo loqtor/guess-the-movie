@@ -2,7 +2,7 @@ import React from 'react';
 import { Dispatch } from 'redux';
 import { connect } from "react-redux";
 
-import { getMovies, isLoadingMovies, getExtraMovies } from "../store/selectors/movies";
+import { isLoadingMovies, getQuestionnaire, Question } from "../store/selectors/movies";
 import { getMovies as getMoviesAction } from "../store/actions/movies";
 
 import { RootState } from '../store/reducers';
@@ -13,18 +13,25 @@ import { Timer } from '../components/game/Timer';
 import { GameStatus } from '../constants/game';
 import { PhotoCropper } from '../components/game/PhotoCropper';
 import { Gallery } from '../components/Gallery';
+import { AnswerList, Answer } from '../components/game/AnswerList';
 
-export interface OwnProps {}
+interface OwnProps {}
+
+interface Result {
+  movie: Movie;
+  answer: Answer;
+  rightAnswer?: Answer;
+  isCorrect: boolean;
+}
 
 interface OwnStateProps {
   status: GameStatus;
-  currentMovie: number;
-  extraMovies: number[];
+  currentQuestionIndex: number;
+  results: Result[];
 }
 
 interface StateProps {
-  movies: Movie[];
-  extraMovies: Movie[];
+  questionnaire: Question[];
   isLoadingMovies: boolean;
 }
      
@@ -40,8 +47,8 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
 
     this.state = {
       status: GameStatus.PLAYING,
-      currentMovie: 0,
-      extraMovies: [0, 1],
+      currentQuestionIndex: 0,
+      results: [],
     };
   }
 
@@ -66,6 +73,28 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     debugger;
   }
 
+  onSelect = (answer: Answer) => {
+    const { currentQuestionIndex, results } = this.state;
+    const { questionnaire } = this.props;
+    const currentQuestion = questionnaire[currentQuestionIndex];
+    const result : Result = {
+      isCorrect: answer.id === currentQuestion.movie.id,
+      answer,
+      rightAnswer: currentQuestion.answers.find((answer: Answer) => answer.isCorrect),
+      movie: currentQuestion.movie,
+    };
+
+    const newResults = [...results, result];
+    const nextIndex = currentQuestionIndex + 1;
+    const isFinished = nextIndex >= questionnaire.length;
+
+    this.setState({
+      results: newResults,
+      currentQuestionIndex: currentQuestionIndex + 1,
+      status: isFinished ? GameStatus.FINISHED : GameStatus.PLAYING,
+    });
+  }
+
   finishGame = () => {
     this.setState({
       status: GameStatus.FINISHED,
@@ -73,14 +102,19 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
   }
 
   render() {
-    const { status } = this.state;
+    const { results, status } = this.state;
 
     if (status === GameStatus.FINISHED) {
-      return (<p>Time's up!</p>);
+      return (
+        <ul>
+          {results.map((result: Result) => (
+            <li>{result.movie.title}: {result.isCorrect ? 'Noice' : 'Oh, come on, mate.'} </li>
+          ))}
+        </ul>
+      );
     }
 
-    const { isLoadingMovies, movies } = this.props;
-
+    const { isLoadingMovies, questionnaire } = this.props;
 
     if (isLoadingMovies) {
       return (
@@ -88,18 +122,23 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       )
     }
 
-    if (!movies.length) {
+    if (!questionnaire.length) {
       return (
         <p>Sorry, the movies API is not currently working.</p>
       );
     }
 
+    const { currentQuestionIndex } = this.state;
+    const currentQuestion = questionnaire[currentQuestionIndex];
+
     return (
       <>
         <Timer time={10000} onTimeUp={this.finishGame} />
-        <Gallery>
-          {movies && movies.length > 0 && (
-            movies.map((movie: Movie) => (
+        <Gallery
+          currentSlide={currentQuestionIndex}
+        >
+          {questionnaire && questionnaire.length > 0 && (
+            questionnaire.map(({ movie }: { movie: Movie}) => (
               <>
                 <p key={`title-${movie.id}`}>{movie.title}</p>
                 <PhotoCropper 
@@ -111,7 +150,10 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
             ))
           )}
         </Gallery>
-        
+        <AnswerList
+          answers={currentQuestion.answers}
+          onSelect={this.onSelect}
+        />
       </>
     )
   }
@@ -119,8 +161,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
  
 function mapStateToProps(state: RootState): StateProps {
   return {
-    movies: getMovies(state),
-    extraMovies: getExtraMovies(state),
+    questionnaire: getQuestionnaire(state),
     isLoadingMovies: isLoadingMovies(state),
   };
 }

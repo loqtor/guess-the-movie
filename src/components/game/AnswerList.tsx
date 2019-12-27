@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import * as classnames from 'classnames';
+import classnames from 'classnames';
 
-interface Answer {
-  id: number;
+export interface Answer {
+  id: number | string;
   label: string;
-  isCorrect: boolean;
+  isCorrect?: boolean;
 }
 
 interface Props {
