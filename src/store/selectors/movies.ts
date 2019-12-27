@@ -54,8 +54,9 @@ export const getQuestionnaire = (state: RootState) => {
       answers: shuffledAnswersForQuestion,
     });
     
-    extraMoviesIndexes[0]++;
-    extraMoviesIndexes[1]++;
+    // So we ensure that every question has different options.
+    extraMoviesIndexes[0] = extraMoviesIndexes[0] + 2;
+    extraMoviesIndexes[1] = extraMoviesIndexes[1] + 2;
   });
 
   return getQuestionnaire;
