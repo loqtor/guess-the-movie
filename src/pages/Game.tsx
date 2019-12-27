@@ -2,28 +2,42 @@ import React from 'react';
 import { Dispatch } from 'redux';
 import { connect } from "react-redux";
 
-import { SpeechRecognizer } from 'react-speech-recognizer-component';
-
-import { getMovies, isLoadingMovies } from "../store/selectors/movies";
+import { isLoadingMovies, getQuestionnaire, Question } from "../store/selectors/movies";
 import { getMovies as getMoviesAction } from "../store/actions/movies";
 
 import { RootState } from '../store/reducers';
 import { Movie } from '../store/reducers/movies';
 
-import { IMAGE_BASE_URL, IMAGE_WIDTH } from "../constants/config";
+import { IMAGE_BASE_URL, IMAGE_WIDTH, GAME_TIME } from "../constants/config";
 import { Timer } from '../components/game/Timer';
 import { GameStatus } from '../constants/game';
 import { PhotoCropper } from '../components/game/PhotoCropper';
 import { Gallery } from '../components/Gallery';
+import { AnswerList, Answer } from '../components/game/AnswerList';
 
-export interface OwnProps {}
+const INITIAL_STATE = {
+  status: GameStatus.PLAYING,
+  currentQuestionIndex: 0,
+  results: [],
+};
+
+interface OwnProps {}
+
+interface Result {
+  movie: Movie;
+  answer: Answer;
+  rightAnswer?: Answer;
+  isCorrect: boolean;
+}
 
 interface OwnStateProps {
   status: GameStatus;
+  currentQuestionIndex: number;
+  results: Result[];
 }
 
 interface StateProps {
-  movies: Movie[];
+  questionnaire: Question[];
   isLoadingMovies: boolean;
 }
      
@@ -37,9 +51,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
   constructor(props: Props) {
     super(props);
 
-    this.state = {
-      status: GameStatus.PLAYING,
-    };
+    this.state = INITIAL_STATE;
   }
 
   componentDidMount() {
@@ -48,19 +60,26 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     getMovies();
   }
 
-  onStart = (evt: any) => {
-    console.log('onStart evt: ', evt);
-    debugger;
-  }
+  onSelect = (answer: Answer) => {
+    const { currentQuestionIndex, results } = this.state;
+    const { questionnaire } = this.props;
+    const currentQuestion = questionnaire[currentQuestionIndex];
+    const result : Result = {
+      isCorrect: answer.id === currentQuestion.movie.id,
+      answer,
+      rightAnswer: currentQuestion.answers.find((answer: Answer) => answer.isCorrect),
+      movie: currentQuestion.movie,
+    };
 
-  onResult = (evt: any) => {
-    console.log('onResult evt: ', evt);
-    debugger;
-  }
+    const newResults = [...results, result];
+    const nextIndex = currentQuestionIndex + 1;
+    const isFinished = nextIndex >= questionnaire.length;
 
-  onError = (evt: any) => {
-    console.log('onError evt: ', evt);
-    debugger;
+    this.setState({
+      results: newResults,
+      currentQuestionIndex: currentQuestionIndex + 1,
+      status: isFinished ? GameStatus.FINISHED : GameStatus.PLAYING,
+    });
   }
 
   finishGame = () => {
@@ -69,15 +88,31 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     });
   }
 
+  reset = () => {
+    const { getMovies } = this.props;
+
+    getMovies();
+
+    this.setState(INITIAL_STATE);
+  }
+
   render() {
-    const { status } = this.state;
+    const { results, status } = this.state;
 
     if (status === GameStatus.FINISHED) {
-      return (<p>Time's up!</p>);
+      return (
+        <>
+          <ul>
+            {results.map((result: Result) => (
+              <li>{result.movie.title}: {result.isCorrect ? 'Noice' : 'Oh, come on, mate.'} </li>
+            ))}
+          </ul>
+          <button onClick={this.reset}>Try again!</button>
+        </>
+      );
     }
 
-    const { isLoadingMovies, movies } = this.props;
-
+    const { isLoadingMovies, questionnaire } = this.props;
 
     if (isLoadingMovies) {
       return (
@@ -85,36 +120,38 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       )
     }
 
-    if (!movies.length) {
+    if (!questionnaire.length) {
       return (
         <p>Sorry, the movies API is not currently working.</p>
       );
     }
 
+    const { currentQuestionIndex } = this.state;
+    const currentQuestion = questionnaire[currentQuestionIndex];
+
     return (
       <>
-        <Timer time={10000} onTimeUp={this.finishGame} />
-        <SpeechRecognizer
-          startSpeechRecognition={true}
-          onResult={this.onResult}
-          onStart={this.onStart}
-          onError={this.onError}
+        <Timer time={GAME_TIME} onTimeUp={this.finishGame} />
+        <Gallery
+          currentSlide={currentQuestionIndex}
+        >
+          {questionnaire && questionnaire.length > 0 && (
+            questionnaire.map(({ movie }: { movie: Movie}) => (
+              <>
+                <p key={`title-${movie.id}`}>{movie.title}</p>
+                <PhotoCropper 
+                  key={`image-${movie.id}`} 
+                  imageUrl={`${IMAGE_BASE_URL}${movie.poster_path}`}
+                  expectedImageWidth={IMAGE_WIDTH}
+                />
+              </>
+            ))
+          )}
+        </Gallery>
+        <AnswerList
+          answers={currentQuestion.answers}
+          onSelect={this.onSelect}
         />
-        <Gallery>
-          {movies && movies.length > 0 && (
-              movies.map((movie: Movie) => (
-                <>
-                  <p key={`title-${movie.id}`}>{movie.title}</p>
-                  <PhotoCropper 
-                    key={`image-${movie.id}`} 
-                    imageUrl={`${IMAGE_BASE_URL}${movie.poster_path}`}
-                    expectedImageWidth={IMAGE_WIDTH}
-                  />
-                </>
-              ))
-            )}
-          </Gallery>
-        
       </>
     )
   }
@@ -122,7 +159,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
  
 function mapStateToProps(state: RootState): StateProps {
   return {
-    movies: getMovies(state),
+    questionnaire: getQuestionnaire(state),
     isLoadingMovies: isLoadingMovies(state),
   };
 }

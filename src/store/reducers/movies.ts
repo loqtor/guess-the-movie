@@ -19,15 +19,19 @@ export type Movie = {
 
 export type MoviesState = {
   movies: Movie[];
+  extraMovies: Movie[]; // To give options as a response that do not clash with actual answers
   isLoadingMovies: boolean;
+  error: string | null;
 }
 
 const initialState: MoviesState = {
   movies: [],
+  extraMovies: [],
   isLoadingMovies: false,
+  error: null,
 };
 
-export const movies = (state = initialState, action: { payload: { movies: Movie[], error: string }, type: any }) => {
+export const movies = (state = initialState, action: { payload: MoviesState, type: any }) => {
   switch (action.type) {
     case MOVIES_TYPES.GET_MOVIES: 
       return {
@@ -39,6 +43,7 @@ export const movies = (state = initialState, action: { payload: { movies: Movie[
         ...state,
         isLoadingMovies: false,
         movies: action.payload.movies,
+        extraMovies: action.payload.extraMovies,
       };
     case MOVIES_TYPES.GET_MOVIES_FAIL:
       return {
