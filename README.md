@@ -6,6 +6,8 @@ Multiple choice movies questionnaire game. Shows a movie poster and the user has
 
 It started as a way to experiment with the SpeechRecognition API (people would answer the questions by saying the movie name) by using a [React Component](https://github.com/loqtor/react-speech-recognizer) I put together for that, but after learning (the hard way) that it no longer seems to work on Chrome (haven't tried Canary yet) I just continued to finished the game using standard interaction and made the game a multiple choice questionnaire.
 
+The version (that tries) using `SpeechRecognition` is available on this [branch](https://github.com/loqtor/guess-the-movie/tree/feature/speech-recognition-local).
+
 ## How?
 
 I used [Movie Database](https://www.themoviedb.org/) API for this. The application gets two random sets of movies from the API and mix them up to generate a questionnaire.
