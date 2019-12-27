@@ -60,21 +60,6 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     getMovies();
   }
 
-  onStart = (evt: any) => {
-    console.log('onStart evt: ', evt);
-    debugger;
-  }
-
-  onResult = (evt: any) => {
-    console.log('onResult evt: ', evt);
-    debugger;
-  }
-
-  onError = (evt: any) => {
-    console.log('onError evt: ', evt);
-    debugger;
-  }
-
   onSelect = (answer: Answer) => {
     const { currentQuestionIndex, results } = this.state;
     const { questionnaire } = this.props;
