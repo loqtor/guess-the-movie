@@ -24,7 +24,7 @@ export const AnswerList = (props: Props) => {
         });
 
         return (
-          <li className={answerClassname}>
+          <li key={answer.id} className={answerClassname}>
             <button onClick={() => {
               selectAnswer(index);
               onSelect(answer);

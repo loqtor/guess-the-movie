@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { Dispatch } from 'redux';
 import { connect } from "react-redux";
 
@@ -137,14 +137,12 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
         >
           {questionnaire && questionnaire.length > 0 && (
             questionnaire.map(({ movie }: { movie: Movie}) => (
-              <>
-                <p key={`title-${movie.id}`}>{movie.title}</p>
-                <PhotoCropper 
-                  key={`image-${movie.id}`} 
+              <Fragment key={movie.id}>
+                <PhotoCropper
                   imageUrl={`${IMAGE_BASE_URL}${movie.poster_path}`}
                   expectedImageWidth={IMAGE_WIDTH}
                 />
-              </>
+              </Fragment>
             ))
           )}
         </Gallery>
