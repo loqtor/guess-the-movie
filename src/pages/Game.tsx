@@ -8,7 +8,7 @@ import { getMovies as getMoviesAction } from "../store/actions/movies";
 import { RootState } from '../store/reducers';
 import { Movie } from '../store/reducers/movies';
 
-import { IMAGE_BASE_URL, IMAGE_WIDTH } from "../constants/config";
+import { IMAGE_BASE_URL, IMAGE_WIDTH, GAME_TIME } from "../constants/config";
 import { Timer } from '../components/game/Timer';
 import { GameStatus } from '../constants/game';
 import { PhotoCropper } from '../components/game/PhotoCropper';
@@ -146,7 +146,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
 
     return (
       <>
-        <Timer time={10000} onTimeUp={this.finishGame} />
+        <Timer time={GAME_TIME} onTimeUp={this.finishGame} />
         <Gallery
           currentSlide={currentQuestionIndex}
         >
