@@ -15,6 +15,12 @@ import { PhotoCropper } from '../components/game/PhotoCropper';
 import { Gallery } from '../components/Gallery';
 import { AnswerList, Answer } from '../components/game/AnswerList';
 
+const INITIAL_STATE = {
+  status: GameStatus.PLAYING,
+  currentQuestionIndex: 0,
+  results: [],
+};
+
 interface OwnProps {}
 
 interface Result {
@@ -45,11 +51,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
   constructor(props: Props) {
     super(props);
 
-    this.state = {
-      status: GameStatus.PLAYING,
-      currentQuestionIndex: 0,
-      results: [],
-    };
+    this.state = INITIAL_STATE;
   }
 
   componentDidMount() {
@@ -101,16 +103,27 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     });
   }
 
+  reset = () => {
+    const { getMovies } = this.props;
+
+    getMovies();
+
+    this.setState(INITIAL_STATE);
+  }
+
   render() {
     const { results, status } = this.state;
 
     if (status === GameStatus.FINISHED) {
       return (
-        <ul>
-          {results.map((result: Result) => (
-            <li>{result.movie.title}: {result.isCorrect ? 'Noice' : 'Oh, come on, mate.'} </li>
-          ))}
-        </ul>
+        <>
+          <ul>
+            {results.map((result: Result) => (
+              <li>{result.movie.title}: {result.isCorrect ? 'Noice' : 'Oh, come on, mate.'} </li>
+            ))}
+          </ul>
+          <button onClick={this.reset}>Try again!</button>
+        </>
       );
     }
 
