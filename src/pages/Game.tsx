@@ -99,18 +99,18 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
         <Timer time={10000} onTimeUp={this.finishGame} />
         <Gallery>
           {movies && movies.length > 0 && (
-              movies.map((movie: Movie) => (
-                <>
-                  <p key={`title-${movie.id}`}>{movie.title}</p>
-                  <PhotoCropper 
-                    key={`image-${movie.id}`} 
-                    imageUrl={`${IMAGE_BASE_URL}${movie.poster_path}`}
-                    expectedImageWidth={IMAGE_WIDTH}
-                  />
-                </>
-              ))
-            )}
-          </Gallery>
+            movies.map((movie: Movie) => (
+              <>
+                <p key={`title-${movie.id}`}>{movie.title}</p>
+                <PhotoCropper 
+                  key={`image-${movie.id}`} 
+                  imageUrl={`${IMAGE_BASE_URL}${movie.poster_path}`}
+                  expectedImageWidth={IMAGE_WIDTH}
+                />
+              </>
+            ))
+          )}
+        </Gallery>
         
       </>
     )
