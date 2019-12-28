@@ -13,6 +13,7 @@ export const SpeechRecognizerStatus = {
   RECOGNIZING: 1,
   STOPPED: 2,
   FAILED: 3,
+  UNSUPPORTED: 4,
 }
 
 export const SpeechRecognizer = class SpeechRecognizer extends Component {
@@ -29,7 +30,7 @@ export const SpeechRecognizer = class SpeechRecognizer extends Component {
     } = props;
 
     this.state = {
-      status: startSpeechRecognition ? SpeechRecognizerStatus.RECOGNIZING : SpeechRecognizerStatus.INACTIVE,
+      status: SpeechRecognizerStatus.INACTIVE,
       results: null,
       formattedResults: null,
       transcripts: [],
@@ -44,7 +45,7 @@ export const SpeechRecognizer = class SpeechRecognizer extends Component {
       window.oSpeechRecognition;
 
     if (!speechRecognitionConstructor) {
-      this.state.status = SpeechRecognizerStatus.FAILED;
+      this.state.status = SpeechRecognizerStatus.UNSUPPORTED;
       return;
     }
 
@@ -166,8 +167,19 @@ export const SpeechRecognizer = class SpeechRecognizer extends Component {
     )
   }
 
-  componentDidUpdate() {
+  verifyStatus = () => {
     const { status } = this.state;
+
+    if (status === SpeechRecognizerStatus.FAILED) {
+      console.error(
+        `There was an error at initialisation. 
+        Most likely related to SpeechRecognition not being supported by the current browser.
+        Check https://caniuse.com/#feat=speech-recognition for more info`
+      );
+
+      this.onError(null);
+      return;
+    }
 
     if (status === SpeechRecognizerStatus.FAILED) {
       return;
@@ -191,18 +203,12 @@ export const SpeechRecognizer = class SpeechRecognizer extends Component {
     }
   }
 
+  componentDidUpdate() {
+    this.verifyStatus();
+  }
+
   componentDidMount() {
-    const { status } = this.state;
-
-    if (status === SpeechRecognizerStatus.FAILED) {
-      console.error(
-        `There was an error at initialisation. 
-        Most likely related to SpeechRecognition not being supported by the current browser.
-        Check https://caniuse.com/#feat=speech-recognition for more info`
-      );
-
-      this.onError(null);
-    }
+    this.verifyStatus();
   }
 
   render() {
