@@ -67,7 +67,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     const result : Result = {
       isCorrect: answer.id === currentQuestion.movie.id,
       answer,
-      rightAnswer: currentQuestion.answers.find((answer: Answer) => answer.isCorrect),
+      rightAnswer: currentQuestion.answers.find((answer: Answer) => answer.isCorrect || false),
       movie: currentQuestion.movie,
     };
 
