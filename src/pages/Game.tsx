@@ -9,11 +9,16 @@ import { RootState } from '../store/reducers';
 import { Movie } from '../store/reducers/movies';
 
 import { IMAGE_BASE_URL, IMAGE_WIDTH, GAME_TIME } from "../constants/config";
+// import { SpeechRecognizer } from 'react-speech-recognizer-component';
+import { SpeechRecognizer } from '../components/SpeechRecognizer';
 import { Timer } from '../components/game/Timer';
 import { GameStatus } from '../constants/game';
 import { PhotoCropper } from '../components/game/PhotoCropper';
 import { Gallery } from '../components/Gallery';
 import { AnswerList, Answer } from '../components/game/AnswerList';
+
+import { COMMANDS } from '../constants/game';
+import { detectCommand } from "../tools/game";
 
 const INITIAL_STATE = {
   status: GameStatus.PLAYING,
@@ -25,8 +30,8 @@ interface OwnProps {}
 
 interface Result {
   movie: Movie;
-  answer: Answer;
-  rightAnswer?: Answer;
+  answer?: Answer;
+  spokenAnswer?: string[];
   isCorrect: boolean;
 }
 
@@ -60,16 +65,9 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     getMovies();
   }
 
-  onSelect = (answer: Answer) => {
-    const { currentQuestionIndex, results } = this.state;
+  resumeGame = (result: Result) => {
     const { questionnaire } = this.props;
-    const currentQuestion = questionnaire[currentQuestionIndex];
-    const result : Result = {
-      isCorrect: answer.id === currentQuestion.movie.id,
-      answer,
-      rightAnswer: currentQuestion.answers.find((answer: Answer) => answer.isCorrect || false),
-      movie: currentQuestion.movie,
-    };
+    const { currentQuestionIndex, results } = this.state;
 
     const newResults = [...results, result];
     const nextIndex = currentQuestionIndex + 1;
@@ -80,6 +78,65 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       currentQuestionIndex: currentQuestionIndex + 1,
       status: isFinished ? GameStatus.FINISHED : GameStatus.PLAYING,
     });
+  }
+
+  onSelect = (answer: Answer) => {
+    const { currentQuestionIndex } = this.state;
+    const { questionnaire } = this.props;
+    const currentQuestion = questionnaire[currentQuestionIndex];
+    const result : Result = {
+      isCorrect: answer.id === currentQuestion.movie.id,
+      answer,
+      movie: currentQuestion.movie,
+    };
+
+    this.resumeGame(result);
+  }
+
+  onStart = () => {
+    console.log('Speech recognition started.');
+  }
+
+  onResult = (results: any, __: any, transcripts: string[]) => {
+    const shouldGoNext = detectCommand(COMMANDS.PASS, transcripts);
+    const { currentQuestionIndex } = this.state;
+
+    if (shouldGoNext) {
+      this.setState({
+        currentQuestionIndex: currentQuestionIndex + 1,
+      });
+
+      return;
+    }
+
+    const shouldShowHint = detectCommand(COMMANDS.HINT, transcripts);
+
+    if (shouldShowHint) {
+      console.log('Hint requested, transcript: ', transcripts);
+      return;
+    }
+
+    const shouldShowOptions = detectCommand(COMMANDS.OPTIONS, transcripts);
+
+    if (shouldShowOptions) {
+      console.log('Options requested, transcript: ', transcripts);
+    }
+
+    const { questionnaire } = this.props;
+    const currentMovie = questionnaire[currentQuestionIndex].movie;
+    const titleFormatted = currentMovie.title.toLowerCase(); 
+    const isItTheRightAnswer = transcripts.find((transcript: string) => transcript === titleFormatted);
+    const result: Result = {
+      isCorrect: !!isItTheRightAnswer,
+      spokenAnswer: transcripts,
+      movie: currentMovie,
+    }
+
+    this.resumeGame(result);
+  }
+
+  onError = () => {
+    debugger;
   }
 
   finishGame = () => {
@@ -131,6 +188,14 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
 
     return (
       <>
+        <SpeechRecognizer
+          startSpeechRecognition={true}
+          onStart={this.onStart}
+          onResult={this.onResult}
+          onError={this.onError}
+          dontRender={true}
+          interimResults={false}
+        />
         <Timer time={GAME_TIME} onTimeUp={this.finishGame} />
         <Gallery
           currentSlide={currentQuestionIndex}
