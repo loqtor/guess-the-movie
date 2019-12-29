@@ -97,7 +97,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     console.log('Speech recognition started.');
   }
 
-  onResult = (results: any, __: any, transcripts: string[]) => {
+  onResult = (_: any, __: any, transcripts: string[]) => {
     const shouldGoNext = detectCommand(COMMANDS.PASS, transcripts);
     const { currentQuestionIndex } = this.state;
 
