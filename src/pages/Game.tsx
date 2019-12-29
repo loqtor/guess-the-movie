@@ -52,6 +52,24 @@ interface DispatchProps {
  
 type Props = StateProps & DispatchProps & OwnProps;
 
+interface AnnyangOptions {
+  autorestart: boolean;
+  continuous: boolean;
+  paused: boolean;
+}
+
+interface Commands {
+  [keyof: string]: () => {}
+}
+
+interface Annyang {
+  start: () => void;
+  addCommands: (commands: Commands) => void;
+  removeCommands: (command: string) => void;
+}
+
+declare var annyang: Annyang;
+
 class GameComponent extends React.Component<Props, OwnStateProps> {
   constructor(props: Props) {
     super(props);
@@ -188,14 +206,6 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
 
     return (
       <>
-        <SpeechRecognizer
-          startSpeechRecognition={true}
-          onStart={this.onStart}
-          onResult={this.onResult}
-          onError={this.onError}
-          dontRender={true}
-          interimResults={false}
-        />
         <Timer time={GAME_TIME} onTimeUp={this.finishGame} />
         <Gallery
           currentSlide={currentQuestionIndex}
