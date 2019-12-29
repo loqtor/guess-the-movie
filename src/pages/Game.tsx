@@ -9,21 +9,16 @@ import { RootState } from '../store/reducers';
 import { Movie } from '../store/reducers/movies';
 
 import { IMAGE_BASE_URL, IMAGE_WIDTH, GAME_TIME } from "../constants/config";
-// import { SpeechRecognizer } from 'react-speech-recognizer-component';
-import { SpeechRecognizer } from '../components/SpeechRecognizer';
 import { Timer } from '../components/game/Timer';
 import { GameStatus } from '../constants/game';
 import { PhotoCropper } from '../components/game/PhotoCropper';
 import { Gallery } from '../components/Gallery';
 import { AnswerList, Answer } from '../components/game/AnswerList';
 
-import { COMMANDS } from '../constants/game';
-import { detectCommand } from "../tools/game";
-
 const INITIAL_STATE = {
   status: GameStatus.PLAYING,
   currentQuestionIndex: 0,
-  results: [],
+  results: {},
 };
 
 interface OwnProps {}
@@ -38,7 +33,9 @@ interface Result {
 interface OwnStateProps {
   status: GameStatus;
   currentQuestionIndex: number;
-  results: Result[];
+  results: {
+    [keyof: string]: Result,
+  };
 }
 
 interface StateProps {
@@ -58,14 +55,16 @@ interface AnnyangOptions {
   paused: boolean;
 }
 
-interface Commands {
+interface AnnyangCommands {
   [keyof: string]: () => {}
 }
 
 interface Annyang {
-  start: () => void;
-  addCommands: (commands: Commands) => void;
+  start: (options?: AnnyangOptions) => void;
+  abort: () => void;
+  addCommands: (commands: AnnyangCommands) => void;
   removeCommands: (command: string) => void;
+  addCallback: (event: string, callback: () => void) => void;
 }
 
 declare var annyang: Annyang;
@@ -74,20 +73,67 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
   constructor(props: Props) {
     super(props);
 
+    const COMMANDS: { [keyof: string]: any } = {
+      PASS: {
+        phrases: ['pass', 'next', 'don\'t know'],
+        callback: this.handlePass,
+      },
+      CURSE: {
+        phrases: ['fuck', 'shit', 'motherfucker'],
+        callback: this.handleCurse, 
+      },
+      HINT: {
+        phrases: ['hint', 'clue', 'tell me something I don\'t know'],
+        callback: this.handleHintRequest,
+      },
+      OPTIONS: {
+        phrases: ['options', 'show me options', 'give me options'],
+        callback: this.handleOptionsRequest,
+      },
+    };
+
+    const annyangFormattedCommands: { [keyof: string]: any } = {};
+
+    Object.keys(COMMANDS).forEach((commandKey: any) => {
+      const { phrases } = COMMANDS[commandKey];
+
+      phrases.forEach((phrase: string) => {
+        annyangFormattedCommands[phrase] = COMMANDS[commandKey].callback;
+      });
+    });
+
+    annyang.addCommands(annyangFormattedCommands);
+    annyang.addCallback('resultNoMatch', this.handleNoMatch);
+
     this.state = INITIAL_STATE;
   }
 
-  componentDidMount() {
-    const { getMovies } = this.props;
+  updateMoviesOnCommands = () => {
+    const { questionnaire } = this.props;
 
-    getMovies();
+    if (!questionnaire.length) {
+      return;
+    }
+
+    const { currentQuestionIndex } = this.state;
+    const { title: currentMovieTitle } = questionnaire[currentQuestionIndex].movie;
+
+    annyang.addCommands({ [currentMovieTitle.toLocaleLowerCase()]: this.handleMatch } as AnnyangCommands);
+
+    if (currentQuestionIndex >= 1) {
+      const { title: previousMovieTitle } = this.props.questionnaire[currentQuestionIndex].movie;
+      annyang.removeCommands(previousMovieTitle);
+    }
+
+    annyang.start();
   }
 
   resumeGame = (result: Result) => {
     const { questionnaire } = this.props;
     const { currentQuestionIndex, results } = this.state;
 
-    const newResults = [...results, result];
+    const newResult = { [result.movie.id]: result };
+    const newResults = {...results, ...newResult};
     const nextIndex = currentQuestionIndex + 1;
     const isFinished = nextIndex >= questionnaire.length;
 
@@ -96,6 +142,49 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       currentQuestionIndex: currentQuestionIndex + 1,
       status: isFinished ? GameStatus.FINISHED : GameStatus.PLAYING,
     });
+  }
+
+  handlePass = () => {
+    this.handleNoMatch();
+  }
+
+  handleCurse = () => {
+    console.log('Put a dollar in that jar boy.');
+  }
+
+  handleHintRequest = () => {
+    console.log('I\'ll give you the hints when I think you need them, ok?');
+  }
+
+  handleOptionsRequest = () => {
+    console.log('You want some options? I\'ll give you some options.');
+  }
+
+  handleNoMatch = (results?: any) => {
+    const { questionnaire } = this.props;
+    const { currentQuestionIndex } = this.state;
+
+    const currentMovie = questionnaire[currentQuestionIndex].movie;
+    const result: Result = {
+      isCorrect: false,
+      spokenAnswer: [results],
+      movie: currentMovie,
+    }
+
+    this.resumeGame(result);
+  }
+
+  handleMatch = () => {
+    const { currentQuestionIndex } = this.state;
+    const { questionnaire } = this.props;
+    const currentMovie = questionnaire[currentQuestionIndex].movie;
+    const result: Result = {
+      isCorrect: true,
+      spokenAnswer: [currentMovie.title],
+      movie: currentMovie,
+    }
+
+    this.resumeGame(result);
   }
 
   onSelect = (answer: Answer) => {
@@ -111,50 +200,10 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     this.resumeGame(result);
   }
 
-  onStart = () => {
-    console.log('Speech recognition started.');
-  }
-
-  onResult = (_: any, __: any, transcripts: string[]) => {
-    const shouldGoNext = detectCommand(COMMANDS.PASS, transcripts);
-    const { currentQuestionIndex } = this.state;
-
-    if (shouldGoNext) {
-      this.setState({
-        currentQuestionIndex: currentQuestionIndex + 1,
-      });
-
-      return;
-    }
-
-    const shouldShowHint = detectCommand(COMMANDS.HINT, transcripts);
-
-    if (shouldShowHint) {
-      console.log('Hint requested, transcript: ', transcripts);
-      return;
-    }
-
-    const shouldShowOptions = detectCommand(COMMANDS.OPTIONS, transcripts);
-
-    if (shouldShowOptions) {
-      console.log('Options requested, transcript: ', transcripts);
-    }
-
-    const { questionnaire } = this.props;
-    const currentMovie = questionnaire[currentQuestionIndex].movie;
-    const titleFormatted = currentMovie.title.toLowerCase(); 
-    const isItTheRightAnswer = transcripts.find((transcript: string) => transcript === titleFormatted);
-    const result: Result = {
-      isCorrect: !!isItTheRightAnswer,
-      spokenAnswer: transcripts,
-      movie: currentMovie,
-    }
-
-    this.resumeGame(result);
-  }
-
   onError = () => {
-    debugger;
+    this.setState({
+      status: GameStatus.FAILED,
+    });
   }
 
   finishGame = () => {
@@ -171,15 +220,41 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     this.setState(INITIAL_STATE);
   }
 
+  componentDidUpdate() {
+    const { questionnaire } = this.props;
+    const { currentQuestionIndex } = this.state;
+
+    if (questionnaire.length > currentQuestionIndex) {
+      this.updateMoviesOnCommands();
+    } else {
+      annyang.abort();
+    }
+  }
+
+  componentDidMount() {
+    const { getMovies } = this.props;
+
+    getMovies();
+  }
+
   render() {
-    const { results, status } = this.state;
+    const { status } = this.state;
+
+    if (status === GameStatus.FAILED) {
+      return (
+        <p>It seems that your browser doesn't support SpeechRecognition. Please try on latest Chrome on desktop or Android.</p>
+      )
+    }
+
+    const { questionnaire } = this.props;
+    const { results } = this.state;
 
     if (status === GameStatus.FINISHED) {
       return (
         <>
           <ul>
-            {results.map((result: Result) => (
-              <li>{result.movie.title}: {result.isCorrect ? 'Noice' : 'Oh, come on, mate.'} </li>
+            {questionnaire.map(({movie}: { movie: Movie}) => (
+              <li key={`result-${movie.id}`}>{movie.title}: <b>{results[movie.id] && results[movie.id].isCorrect ? 'Correct' : 'Incorrect.'} </b></li>
             ))}
           </ul>
           <button onClick={this.reset}>Try again!</button>
@@ -187,7 +262,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       );
     }
 
-    const { isLoadingMovies, questionnaire } = this.props;
+    const { isLoadingMovies } = this.props;
 
     if (isLoadingMovies) {
       return (
@@ -207,6 +282,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     return (
       <>
         <Timer time={GAME_TIME} onTimeUp={this.finishGame} />
+        <p>{currentQuestionIndex + 1}/{questionnaire.length}</p>
         <Gallery
           currentSlide={currentQuestionIndex}
         >
