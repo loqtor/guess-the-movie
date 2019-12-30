@@ -97,7 +97,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
         callback: this.handleHintRequest,
       },
       OPTIONS: {
-        phrases: ['options', 'show me options', 'give me options'],
+        phrases: ['show options'],
         callback: this.handleOptionsRequest,
       },
     };
@@ -168,6 +168,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       results: newResults,
       currentQuestionIndex: currentQuestionIndex + 1,
       status: isFinished ? GameStatus.FINISHED : GameStatus.PLAYING,
+      shouldShowOptions: false,
     });
   }
 
@@ -184,7 +185,9 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
   }
 
   handleOptionsRequest = () => {
-    console.log('You want some options? I\'ll give you some options.');
+    this.setState({
+      shouldShowOptions: true,
+    });
   }
 
   handleNoMatch = (results?: any) => {
@@ -286,7 +289,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
 
     if (status === GameStatus.FAILED) {
       return (
-        <p>It seems that your browser doesn't support SpeechRecognition. Please try on latest Chrome on desktop or Android.</p>
+        <p>It seems that your browser doesn't support SpeechRecognition. Please try on the latest Chrome on desktop or Android.</p>
       )
     }
 
