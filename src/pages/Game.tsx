@@ -114,7 +114,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     this.state = INITIAL_STATE;
   }
 
-  fuzzyMatch = (results: string[]) => {
+  isItAFuzzyMatch = (results: string[]) => {
     if (!results || !results.length) {
       return false;
     }
@@ -188,7 +188,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
      * This is to make it a bit more _lax_ in how it compares strings considering
      * that movies titles might not be the easiest to "understand".
      */
-    if (this.fuzzyMatch(results)) {
+    if (this.isItAFuzzyMatch(results)) {
       this.handleMatch();
       return;
     }
