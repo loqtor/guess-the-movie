@@ -22,12 +22,12 @@ The application is built using my [boilerplate](https://github.com/loqtor/react-
 
 [`react-speech-recognizer`](https://github.com/loqtor/react-speech-recognizer) works fine and does what it's supposed to. However, there are bits an pieces referred to handling the results you get out of the `SpeechRecognizer` that need to be worked on:
 
-1 - It's not fully exact. The many possibilities you get back implies a big cleaning exercise.
-2 - It struggles with accents. So, targeting a strict match might not be the way to go to keep the game engaging.
+1 - **It's not fully exact**. The many possibilities you get back implies a big cleaning exercise.
+2 - **It struggles with accents**. So, targeting a strict match might not be the way to go to keep the game engaging.
 
 With this in mind there's currently 3 branches with different instances on each:
 
-1 - `develop`: Instead of using Speech Recognition is just showing movie options
+1 - `develop`: Instead of using Speech Recognition is just showing movie options.
 2 - `feature/annyang`: Library that takes commands as strings and runs callbacks when they are called. Seems more stable and polished than what I did. But still, the technology itself is a bit fuzzy yet, hence it's not a 100% accurate (getting `noMatch` event triggered most of the time).
 3 - `feature/annyang-fuzzyset`: Since the technology is not really that exact, the `noMatch` handler will be performing a second _fuzzy_ comparison to see if the user was correct or not.
 
