@@ -9,18 +9,12 @@ import { getMovies as getMoviesAction } from '../store/actions/movies';
 import { RootState } from '../store/reducers';
 import { Movie } from '../store/reducers/movies';
 
-import { IMAGE_BASE_URL, IMAGE_WIDTH, GAME_TIME } from '../constants/config';
+import { IMAGE_BASE_URL, IMAGE_WIDTH, GAME_TIME, THUMBNAIL_WIDTH } from '../constants/config';
 import { Timer } from '../components/game/Timer';
 import { GameStatus } from '../constants/game';
 import { PhotoCropper } from '../components/game/PhotoCropper';
 import { Gallery } from '../components/Gallery';
 import { AnswerList, Answer } from '../components/game/AnswerList';
-
-const INITIAL_STATE = {
-  status: GameStatus.PLAYING,
-  currentQuestionIndex: 0,
-  results: {},
-};
 
 interface OwnProps {}
 
@@ -37,6 +31,7 @@ interface OwnStateProps {
   results: {
     [keyof: string]: Result,
   };
+  shouldShowOptions: boolean;
 }
 
 interface StateProps {
@@ -69,6 +64,13 @@ interface Annyang {
 }
 
 declare var annyang: Annyang;
+
+const INITIAL_STATE = {
+  status: GameStatus.PLAYING,
+  currentQuestionIndex: 0,
+  results: {},
+  shouldShowOptions: false,
+};
 
 /**
  * Percentage of coincidence between result and what the movie title is.
@@ -117,9 +119,22 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
   }
 
   fuzzyMatch = (results: string[]) => {
-    return results.find((result: string) => this.fuzzy.get(result) >= MATCH_THRESHOLD);
+    if (!results || !results.length) {
+      return false;
+    }
+
+    const { currentQuestionIndex } = this.state;
+    const { questionnaire } = this.props;
+    const { title: currentMovieTitle } = questionnaire[currentQuestionIndex].movie;
+    const match = results.find((result: string) => this.fuzzy.get(result) >= MATCH_THRESHOLD);
+
+    return currentMovieTitle === match;
   }
 
+  /**
+   * This ensures that only the current movie title is accepted as a command.
+   * Removes the previous one and adds the current.
+   */
   updateMoviesOnCommands = () => {
     const { questionnaire } = this.props;
 
@@ -305,7 +320,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       );
     }
 
-    const { currentQuestionIndex } = this.state;
+    const { currentQuestionIndex, shouldShowOptions } = this.state;
     const currentQuestion = questionnaire[currentQuestionIndex];
 
     return (
@@ -326,10 +341,37 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
             ))
           )}
         </Gallery>
-        <AnswerList
-          answers={currentQuestion.answers}
-          onSelect={this.onSelect}
-        />
+        <ul>
+          {questionnaire.map(({movie}: { movie: Movie}) => {
+            if (!results[movie.id]) {
+              return (
+                <li key={`result-${movie.id}`}>
+                  <PhotoCropper
+                    imageUrl={`${IMAGE_BASE_URL}${movie.poster_path}`}
+                    expectedImageWidth={THUMBNAIL_WIDTH}
+                  />
+                  ?: <b>Pending</b>
+                </li>
+              );
+            }
+
+            return (
+              <li key={`result-${movie.id}`}>
+                <PhotoCropper
+                  imageUrl={`${IMAGE_BASE_URL}${movie.poster_path}`}
+                  expectedImageWidth={THUMBNAIL_WIDTH}
+                />
+                {movie.title}: <b>{results[movie.id] && results[movie.id].isCorrect ? 'Correct' : 'Incorrect.'}</b>
+              </li>
+            )
+          })}
+        </ul>
+        {shouldShowOptions && (
+          <AnswerList
+            answers={currentQuestion.answers}
+            onSelect={this.onSelect}
+          />
+        )}
       </>
     )
   }
