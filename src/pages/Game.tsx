@@ -92,10 +92,6 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
         phrases: ['fuck', 'shit', 'motherfucker'],
         callback: this.handleCurse, 
       },
-      HINT: {
-        phrases: ['hint', 'clue', 'tell me something I don\'t know'],
-        callback: this.handleHintRequest,
-      },
       OPTIONS: {
         phrases: ['show options'],
         callback: this.handleOptionsRequest,
@@ -178,10 +174,6 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
 
   handleCurse = () => {
     console.log('Put a dollar in that jar boy.');
-  }
-
-  handleHintRequest = () => {
-    console.log('I\'ll give you the hints when I think you need them, ok?');
   }
 
   handleOptionsRequest = () => {
@@ -364,7 +356,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
                   imageUrl={`${IMAGE_BASE_URL}${movie.poster_path}`}
                   expectedImageWidth={THUMBNAIL_WIDTH}
                 />
-                {movie.title}: <b>{results[movie.id] && results[movie.id].isCorrect ? 'Correct' : 'Incorrect.'}</b>
+                {movie.title}: <b>{results[movie.id] && results[movie.id].isCorrect ? 'Correct' : 'Incorrect'}</b>
               </li>
             )
           })}
