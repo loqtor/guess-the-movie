@@ -1,14 +1,15 @@
 import React, { Fragment } from 'react';
 import { Dispatch } from 'redux';
-import { connect } from "react-redux";
+import { connect } from 'react-redux';
+import FuzzySet from 'fuzzyset.js';
 
-import { isLoadingMovies, getQuestionnaire, Question } from "../store/selectors/movies";
-import { getMovies as getMoviesAction } from "../store/actions/movies";
+import { isLoadingMovies, getQuestionnaire, Question } from '../store/selectors/movies';
+import { getMovies as getMoviesAction } from '../store/actions/movies';
 
 import { RootState } from '../store/reducers';
 import { Movie } from '../store/reducers/movies';
 
-import { IMAGE_BASE_URL, IMAGE_WIDTH, GAME_TIME } from "../constants/config";
+import { IMAGE_BASE_URL, IMAGE_WIDTH, GAME_TIME } from '../constants/config';
 import { Timer } from '../components/game/Timer';
 import { GameStatus } from '../constants/game';
 import { PhotoCropper } from '../components/game/PhotoCropper';
@@ -69,7 +70,14 @@ interface Annyang {
 
 declare var annyang: Annyang;
 
+/**
+ * Percentage of coincidence between result and what the movie title is.
+ */
+const MATCH_THRESHOLD = 0.7;
+
 class GameComponent extends React.Component<Props, OwnStateProps> {
+  fuzzy: any;
+
   constructor(props: Props) {
     super(props);
 
@@ -106,6 +114,10 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     annyang.addCallback('resultNoMatch', this.handleNoMatch);
 
     this.state = INITIAL_STATE;
+  }
+
+  fuzzyMatch = (results: string[]) => {
+    return results.find((result: string) => this.fuzzy.get(result) >= MATCH_THRESHOLD);
   }
 
   updateMoviesOnCommands = () => {
@@ -161,6 +173,17 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
   }
 
   handleNoMatch = (results?: any) => {
+    /**
+     * Speech Recognition seems to struggle with accents.
+     * This is to make it a bit more _lax_ in how it compares strings considering
+     * that movies titles might not be the easiest to "understand".
+     */
+    if (this.fuzzyMatch(results)) {
+      this.handleMatch();
+      return;
+    }
+
+
     const { questionnaire } = this.props;
     const { currentQuestionIndex } = this.state;
 
@@ -223,6 +246,12 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
   componentDidUpdate() {
     const { questionnaire } = this.props;
     const { currentQuestionIndex } = this.state;
+
+    if (currentQuestionIndex === 0 && questionnaire.length > 0) {
+      debugger;
+      const titles = questionnaire.map((question: Question) => question.movie.title)
+      this.fuzzy = FuzzySet(titles);
+    }
 
     if (questionnaire.length > currentQuestionIndex) {
       this.updateMoviesOnCommands();
