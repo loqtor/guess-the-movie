@@ -12,7 +12,7 @@ An experiment to test the SpeechRecognition API by using a [React Component](htt
 
 I used [Movie Database](https://www.themoviedb.org/) API for this. The application gets two random sets of movies from the API and mix them up to generate a questionnaire.
 
-The first set of movies will be the ones whose poster would be used and the right answers to the questionnaire, while the second one is where the incorrect options come from.
+The application requests two sets of movies from different random pages in the API. The first set contains the posters that are displayed to the user to take a guess, while the second set would provide the additional options in case the user wants to try that way (see commands below).
 
 ## Technologies used
 
@@ -30,6 +30,11 @@ With this in mind there's currently 3 branches with different instances on each:
 1 - `develop`: Instead of using Speech Recognition is just showing movie options.
 2 - `feature/annyang`: Library that takes commands as strings and runs callbacks when they are called. Seems more stable and polished than what I did. But still, the technology itself is a bit fuzzy yet, hence it's not a 100% accurate (getting `noMatch` event triggered most of the time).
 3 - `feature/annyang-fuzzyset`: Since the technology is not really that exact, the `noMatch` handler will be performing a second _fuzzy_ comparison to see if the user was correct or not.
+
+### Current commands
+
+- `next`: Take you to the next movie to be guessed (should work with `pass` and `I don't know` as well).
+- [anything_else]: Assumes is the guess and tries to match it to the movie.
 
 ## What's next?
 
