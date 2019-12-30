@@ -1,12 +1,12 @@
 # Guess the Movie
 
-Multiple choice movies questionnaire game. Shows a movie poster and the user has to select the right one from three different choices.
+Questionnaire game that can be played through speech. :)
+
+Currently a work in progress but getting there.
 
 ## Why?
 
-It started as a way to experiment with the SpeechRecognition API (people would answer the questions by saying the movie name) by using a [React Component](https://github.com/loqtor/react-speech-recognizer) I put together for that, but after learning (the hard way) that it no longer seems to work on Chrome (haven't tried Canary yet) I just continued to finished the game using standard interaction and made the game a multiple choice questionnaire.
-
-The version (that tries) using `SpeechRecognition` is available on this [branch](https://github.com/loqtor/guess-the-movie/tree/feature/speech-recognition-local).
+An experiment to test the SpeechRecognition API by using a [React Component](https://github.com/loqtor/react-speech-recognizer) I put together for that.
 
 ## How?
 
@@ -18,12 +18,31 @@ The first set of movies will be the ones whose poster would be used and the righ
 
 The application is built using my [boilerplate](https://github.com/loqtor/react-boilerplate) (based on [Create React App](https://github.com/facebook/create-react-app)) with `redux` and `redux-saga` for state management and effects handling (or whatever you'd like to call it).
 
+## Current status
+
+[`react-speech-recognizer`](https://github.com/loqtor/react-speech-recognizer) works fine and does what it's supposed to. However, there are bits an pieces referred to handling the results you get out of the `SpeechRecognizer` that need to be worked on:
+
+1 - It's not fully exact. The many possibilities you get back implies a big cleaning exercise.
+2 - It struggles with accents. So, targeting a strict match might not be the way to go to keep the game engaging.
+
+With this in mind there's currently 3 branches with different instances on each:
+
+1 - `develop`: Instead of using Speech Recognition is just showing movie options
+2 - `feature/annyang`: Library that takes commands as strings and runs callbacks when they are called. Seems more stable and polished than what I did. But still, the technology itself is a bit fuzzy yet, hence it's not a 100% accurate (getting `noMatch` event triggered most of the time).
+3 - `feature/annyang-fuzzyset`: Since the technology is not really that exact, the `noMatch` handler will be performing a second _fuzzy_ comparison to see if the user was correct or not.
+
 ## What's next?
 
+### Relatively easy stuff
+
 1. Add the possibility to show _bonus_ questions to the user (i.e.: After answering 3 in a row get an extra question).
-2. Profile - Let the user create an account.
-3. Challenge - Share your questionnaire with a friend so you can compete with him.
-4. Keep an eye on `SpeechRecognition` and just reimplement the thing if it starts working.
+2. Add an `options` command for the user to see three possible movies the poster would belong to.
+3. Add capability ot recognize cursing and just shows some sort of pun to the user (without interrupting the game).
+
+### Distant future releases
+
+4. Profile - Let the user create an account.
+5. Challenge - Share your questionnaire with a friend so you can compete with him.
 
 # Create React App stuff below.
 
