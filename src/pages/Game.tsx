@@ -1,6 +1,7 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
+import classnames from 'classnames';
 import FuzzySet from 'fuzzyset.js';
 
 import { isLoadingMovies, getQuestionnaire, Question } from '../store/selectors/movies';
@@ -351,14 +352,25 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       <>
         <div className="pure-g">
           <div className="pure-u-1-3">
-            <Timer
-              // time={GAME_TIME}
-              time={10000000}
-              onTimeUp={this.finishGame}
-              timeRunningOutClassesThreshold={5}
-              timeRunningOutClasses='text-red text-bold'
-            />
-            <p>Question {currentQuestionIndex + 1}/{questionnaire.length}</p>
+            <div className="pure-g">
+              <div className="pure-u-2-3">
+                <div className="container">
+                  <p className="text-right">Time</p>
+                  <p className="text-right">Question</p>
+                </div>
+              </div>
+              <div className="pure-u-1-3">
+                <div className="container">
+                  <Timer
+                    time={GAME_TIME}
+                    onTimeUp={this.finishGame}
+                    timeRunningOutClassesThreshold={5}
+                    timeRunningOutClasses='text-red text-bold'
+                  />
+                {currentQuestionIndex + 1}/{questionnaire.length}
+                </div>
+              </div>
+            </div>
           </div>
           <div className="pure-u-1-3">
             <Gallery
@@ -366,12 +378,11 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
             >
               {questionnaire && questionnaire.length > 0 && (
                 questionnaire.map(({ movie }: { movie: Movie}) => (
-                  <Fragment key={movie.id}>
-                    <PhotoCropper
-                      imageUrl={`${IMAGE_BASE_URL}${movie.poster_path}`}
-                      {...photoCropperProps}
-                    />
-                  </Fragment>
+                  <PhotoCropper
+                    key={`gallery-poster-${movie.id}`}
+                    imageUrl={`${IMAGE_BASE_URL}${movie.poster_path}`}
+                    {...photoCropperProps}
+                  />
                 ))
               )}
             </Gallery>
@@ -386,12 +397,14 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
             <ul className="pure-menu-list container">
               {questionnaire.map((question: Question, index: number) => {
                 const { movie } = question;
-                const additionalClassName = currentQuestionIndex === index ? 'current-movie' : '';
+                const thumbnailClasses =  classnames('movie-thumb', {
+                  'current-movie': currentQuestionIndex === index,
+                });
 
                 return (
                   <li key={`result-${movie.id}`} className="pure-menu-item">
                     <PhotoCropper
-                      classes={additionalClassName}
+                      classes={thumbnailClasses}
                       imageUrl={`${IMAGE_BASE_URL}${movie.poster_path}`}
                       expectedImageWidth={THUMBNAIL_WIDTH}
                       imagePosition={currentPosterPosition}
