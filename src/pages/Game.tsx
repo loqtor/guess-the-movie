@@ -301,12 +301,12 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     if (status === GameStatus.FINISHED) {
       return (
         <>
-          <ul>
+          <ul className="pure-menu-list">
             {questionnaire.map(({movie}: { movie: Movie}) => (
-              <li key={`result-${movie.id}`}>{movie.title}: <b>{results[movie.id] && results[movie.id].isCorrect ? 'Correct' : 'Incorrect.'} </b></li>
+              <li className="pure-menu-item" key={`result-${movie.id}`}>{movie.title}: <b>{results[movie.id] && results[movie.id].isCorrect ? 'Correct' : 'Incorrect.'} </b></li>
             ))}
           </ul>
-          <button onClick={this.reset}>Try again!</button>
+          <button className="pure-button" onClick={this.reset}>Try again!</button>
         </>
       );
     }
@@ -350,16 +350,17 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
 
     return (
       <>
+        <h2 className="text-centered">What's the movie?</h2>
         <div className="pure-g">
           <div className="pure-u-1-3">
             <div className="pure-g">
-              <div className="pure-u-2-3">
+              <div className="pure-u-3-4">
                 <div className="container">
                   <p className="text-right">Time</p>
                   <p className="text-right">Question</p>
                 </div>
               </div>
-              <div className="pure-u-1-3">
+              <div className="pure-u-1-4">
                 <div className="container">
                   <Timer
                     time={GAME_TIME}
@@ -386,6 +387,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
                 ))
               )}
             </Gallery>
+            <h3>If you need help, just say "show options"</h3>
             {shouldShowOptions && (
               <AnswerList
                 answers={currentQuestion.answers}
