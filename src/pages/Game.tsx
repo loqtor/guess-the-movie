@@ -62,6 +62,7 @@ interface Annyang {
   addCommands: (commands: AnnyangCommands) => void;
   removeCommands: (command: string) => void;
   addCallback: (event: string, callback: () => void) => void;
+  isListening: () => boolean;
 }
 
 declare var annyang: Annyang;
@@ -155,7 +156,9 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       annyang.removeCommands(previousMovieTitle);
     }
 
-    annyang.start();
+    if (!annyang.isListening()) {
+      annyang.start();
+    }
   }
 
   resumeGame = (result: Result) => {
@@ -200,7 +203,6 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       this.handleMatch();
       return;
     }
-
 
     const { questionnaire } = this.props;
     const { currentQuestionIndex } = this.state;
@@ -248,6 +250,8 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
   }
 
   finishGame = () => {
+    annyang.abort();
+
     this.setState({
       status: GameStatus.FINISHED,
     });
@@ -266,15 +270,12 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     const { currentQuestionIndex } = this.state;
 
     if (currentQuestionIndex === 0 && questionnaire.length > 0) {
-      debugger;
       const titles = questionnaire.map((question: Question) => question.movie.title)
       this.fuzzy = FuzzySet(titles);
     }
 
     if (questionnaire.length > currentQuestionIndex) {
       this.updateMoviesOnCommands();
-    } else {
-      annyang.abort();
     }
   }
 
@@ -340,7 +341,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
 
     return (
       <>
-        <Timer time={GAME_TIME} onTimeUp={this.finishGame} />
+        <Timer time={10} onTimeUp={this.finishGame} />
         <p>{currentQuestionIndex + 1}/{questionnaire.length}</p>
         <Gallery
           currentSlide={currentQuestionIndex}
