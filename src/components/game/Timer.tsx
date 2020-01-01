@@ -71,6 +71,14 @@ export const Timer = class Timer extends Component<IProps, IState> {
       classes = timeRunningOutClasses;
     }
 
-    return (<p className={classes}>{timeLeft}</p>);
+    return (<p className={classes}>{formatTime(timeLeft)}</p>);
   }
+}
+
+const formatTime = (time: number) => {
+  const minutes = Math.floor(time / 60);
+  const seconds = time % 60;
+  const secondsFormatted = seconds < 10 ? `0${seconds}` : seconds;
+
+  return `${minutes}:${secondsFormatted}`;
 }
