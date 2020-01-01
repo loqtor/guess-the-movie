@@ -12,7 +12,7 @@ import { Movie } from '../store/reducers/movies';
 import { IMAGE_BASE_URL, IMAGE_WIDTH, GAME_TIME, THUMBNAIL_WIDTH } from '../constants/config';
 import { Timer } from '../components/game/Timer';
 import { GameStatus } from '../constants/game';
-import { PhotoCropper } from '../components/game/PhotoCropper';
+import { PhotoCropper, IImagePosition } from '../components/game/PhotoCropper';
 import { Gallery } from '../components/Gallery';
 import { AnswerList, Answer } from '../components/game/AnswerList';
 
@@ -32,6 +32,7 @@ interface OwnStateProps {
     [keyof: string]: Result,
   };
   shouldShowOptions: boolean;
+  currentPosterPosition?: IImagePosition;
 }
 
 interface StateProps {
@@ -114,6 +115,12 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     this.state = INITIAL_STATE;
   }
 
+  saveImagePosition = (currentPosterPosition: IImagePosition) => {
+    this.setState({
+      currentPosterPosition,
+    });
+  }
+
   isItAFuzzyMatch = (results: string[]) => {
     if (!results || !results.length) {
       return false;
@@ -165,6 +172,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       currentQuestionIndex: currentQuestionIndex + 1,
       status: isFinished ? GameStatus.FINISHED : GameStatus.PLAYING,
       shouldShowOptions: false,
+      currentPosterPosition: undefined,
     });
   }
 
@@ -315,8 +323,20 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       );
     }
 
-    const { currentQuestionIndex, shouldShowOptions } = this.state;
+    const { currentQuestionIndex, currentPosterPosition, shouldShowOptions } = this.state;
     const currentQuestion = questionnaire[currentQuestionIndex];
+    let photoCropperProps: any = {
+      expectedImageWidth: IMAGE_WIDTH,
+      onMounted: this.saveImagePosition,
+    };
+
+    if (currentPosterPosition) {
+      photoCropperProps = {
+        ...photoCropperProps,
+        imagePositionX: currentPosterPosition.x,
+        imagePositionY: currentPosterPosition.y,
+      }
+    }
 
     return (
       <>
@@ -330,7 +350,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
               <Fragment key={movie.id}>
                 <PhotoCropper
                   imageUrl={`${IMAGE_BASE_URL}${movie.poster_path}`}
-                  expectedImageWidth={IMAGE_WIDTH}
+                  {...photoCropperProps}
                 />
               </Fragment>
             ))

@@ -8,8 +8,7 @@ export interface IImagePosition {
 
 interface IProps {
   imageUrl: string;
-  imagePositionX?: number;
-  imagePositionY?: number;
+  imagePosition?: IImagePosition;
   expectedImageWidth?: number;
   onMounted?: (position: IImagePosition) => void;
 }
@@ -34,10 +33,17 @@ export const PhotoCropper = class PhotoCropper extends Component<IProps, IState>
   constructor(props: IProps) {
     super(props);
 
-    const { imagePositionX, imagePositionY } = this.props;
-    this.state = {
-      imagePosition: setImagePosition(imagePositionX, imagePositionY),
-    };
+    const { imagePosition } = this.props;
+
+    if (imagePosition) {
+      this.state = {
+        imagePosition,
+      };
+    } else {
+      this.state = {
+        imagePosition: setImagePosition(),
+      };
+    }
   }
 
   componentDidMount() {
@@ -65,17 +71,9 @@ export const PhotoCropper = class PhotoCropper extends Component<IProps, IState>
   }
 };
 
-const setImagePosition = (positionX?: number, positionY?: number): IImagePosition => {
-  const positionXFinal = positionX || positionX === 0 ?
-    positionX:
-    generateRandomNumberFromRange(POSITION_BOUNDARIES_X.max, POSITION_BOUNDARIES_X.min);
-
-  const positionYFinal = positionY || positionY === 0 ?
-    positionY:
-    generateRandomNumberFromRange(POSITION_BOUNDARIES_Y.max, POSITION_BOUNDARIES_Y.min);
-
+const setImagePosition = (): IImagePosition => {
   return {
-    x: positionXFinal,
-    y: positionYFinal,
+    x: generateRandomNumberFromRange(POSITION_BOUNDARIES_X.max, POSITION_BOUNDARIES_X.min),
+    y: generateRandomNumberFromRange(POSITION_BOUNDARIES_Y.max, POSITION_BOUNDARIES_Y.min),
   };
 }
