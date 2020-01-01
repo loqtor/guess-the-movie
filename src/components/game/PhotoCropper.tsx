@@ -1,11 +1,20 @@
-import React from 'react';
+import React, { Component } from 'react';
 import { generateRandomNumberFromRange } from '../../tools/util';
 
-interface IProps {
+export interface ImagePosition {
+  x: number;
+  y: number;
+}
+
+interface Props {
   imageUrl: string;
-  imagePositionX?: number;
-  imagePositionY?: number;
+  imagePosition?: ImagePosition;
   expectedImageWidth?: number;
+  onMounted?: (position: ImagePosition) => void;
+}
+
+interface State {
+  imagePosition: ImagePosition;
 }
 
 const POSITION_BOUNDARIES_X = {
@@ -20,30 +29,51 @@ const POSITION_BOUNDARIES_Y = {
 
 const DEFAULT_IMAGE_WIDTH = 1000;
 
-export const PhotoCropper = (props: IProps) => {
-  const { imageUrl, imagePositionX, imagePositionY, expectedImageWidth } = props;
-  const imagePosition = setImagePosition(imagePositionX, imagePositionY);
-  const finalImageWidth = expectedImageWidth || DEFAULT_IMAGE_WIDTH;
+export const PhotoCropper = class PhotoCropper extends Component<Props, State> {
+  constructor(props: Props) {
+    super(props);
 
-  const imageStyles = {
-    maxWidth: `${finalImageWidth / 2}px`, // ensures it's cropped
-    objectFit: 'none',
-    objectPosition: imagePosition,
-  } as React.CSSProperties;
+    const { imagePosition } = this.props;
+
+    if (imagePosition) {
+      this.state = {
+        imagePosition,
+      };
+    } else {
+      this.state = {
+        imagePosition: setImagePosition(),
+      };
+    }
+  }
+
+  componentDidMount() {
+    const { onMounted } = this.props;
+
+    if (onMounted) {
+      onMounted(this.state.imagePosition);
+    }
+  }
+
+  render() {
+    const { imageUrl, expectedImageWidth } = this.props;
+    const { imagePosition } = this.state;
+    const finalImageWidth = expectedImageWidth || DEFAULT_IMAGE_WIDTH;
   
-  return (
-    <img style={imageStyles} src={imageUrl}/>
-  );
+    const imageStyles = {
+      maxWidth: `${finalImageWidth / 2}px`, // ensures it's cropped
+      objectFit: 'none',
+      objectPosition: `${imagePosition.x}% ${imagePosition.y}%`,
+    } as React.CSSProperties;
+    
+    return (
+      <img style={imageStyles} src={imageUrl}/>
+    );
+  }
 };
 
-const setImagePosition = (positionX?: number, positionY?: number) => {
-  const positionXFinal = positionX || positionX === 0 ?
-    positionX:
-    generateRandomNumberFromRange(POSITION_BOUNDARIES_X.max, POSITION_BOUNDARIES_X.min);
-
-  const positionYFinal = positionY || positionY === 0 ?
-    positionY:
-    generateRandomNumberFromRange(POSITION_BOUNDARIES_Y.max, POSITION_BOUNDARIES_Y.min);
-
-  return `${positionXFinal}% ${positionYFinal}%`;
+const setImagePosition = (): ImagePosition => {
+  return {
+    x: generateRandomNumberFromRange(POSITION_BOUNDARIES_X.max, POSITION_BOUNDARIES_X.min),
+    y: generateRandomNumberFromRange(POSITION_BOUNDARIES_Y.max, POSITION_BOUNDARIES_Y.min),
+  };
 }
