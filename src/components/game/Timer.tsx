@@ -4,6 +4,7 @@ interface IProps {
   time: number;
   timeRunningOutClasses?: string;
   timeRunningOutClassesThreshold?: number;
+  unformatted?: boolean;
   onTimeUp: () => void;
 }
 
@@ -63,12 +64,16 @@ export const Timer = class Timer extends Component<IProps, IState> {
 
   render() {
     const { timeLeft } = this.state;
-    const { timeRunningOutClasses, timeRunningOutClassesThreshold } = this.props;
+    const { timeRunningOutClasses, timeRunningOutClassesThreshold, unformatted } = this.props;
     let classes;
 
     if ((timeRunningOutClassesThreshold || timeRunningOutClassesThreshold === 0) &&
       timeLeft <= timeRunningOutClassesThreshold) {
       classes = timeRunningOutClasses;
+    }
+
+    if (unformatted) {
+      return (<p className={classes}>{timeLeft}</p>);
     }
 
     return (<p className={classes}>{formatTime(timeLeft)}</p>);
