@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
+import classnames from 'classnames';
 
 interface IProps {
+  classes?: string;
   time: number;
   timeRunningOutClasses?: string;
   timeRunningOutClassesThreshold?: number;
@@ -64,19 +66,16 @@ export const Timer = class Timer extends Component<IProps, IState> {
 
   render() {
     const { timeLeft } = this.state;
-    const { timeRunningOutClasses, timeRunningOutClassesThreshold, unformatted } = this.props;
-    let classes;
-
-    if ((timeRunningOutClassesThreshold || timeRunningOutClassesThreshold === 0) &&
-      timeLeft <= timeRunningOutClassesThreshold) {
-      classes = timeRunningOutClasses;
-    }
+    const { classes, timeRunningOutClasses, timeRunningOutClassesThreshold, unformatted } = this.props;
+    const finalClasses = classnames(classes, {
+      [timeRunningOutClasses || '']: (timeRunningOutClassesThreshold || timeRunningOutClassesThreshold === 0) && timeLeft <= timeRunningOutClassesThreshold,
+    });
 
     if (unformatted) {
-      return (<p className={classes}>{timeLeft}</p>);
+      return (<p className={finalClasses}>{timeLeft}</p>);
     }
 
-    return (<p className={classes}>{formatTime(timeLeft)}</p>);
+    return (<p className={finalClasses}>{formatTime(timeLeft)}</p>);
   }
 }
 
