@@ -7,6 +7,7 @@ export interface ImagePosition {
 }
 
 interface Props {
+  classes?: string;
   imageUrl: string;
   imagePosition?: ImagePosition;
   expectedImageWidth?: number;
@@ -55,7 +56,7 @@ export const PhotoCropper = class PhotoCropper extends Component<Props, State> {
   }
 
   render() {
-    const { imageUrl, expectedImageWidth } = this.props;
+    const { classes, imageUrl, expectedImageWidth } = this.props;
     const { imagePosition } = this.state;
     const finalImageWidth = expectedImageWidth || DEFAULT_IMAGE_WIDTH;
   
@@ -66,7 +67,7 @@ export const PhotoCropper = class PhotoCropper extends Component<Props, State> {
     } as React.CSSProperties;
     
     return (
-      <img style={imageStyles} src={imageUrl}/>
+      <img style={imageStyles} src={imageUrl} className={classes} />
     );
   }
 };

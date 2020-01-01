@@ -12,10 +12,26 @@ body {
   padding: 0;
 }
 
+.App {
+  max-width: 900px;
+}
+
 .swiper-slide {
   text-align: center;
 }
 
 .text-red {
   color: red;
+}
+
+.text-bold {
+  font-weight: bold;
+}
+
+.container {
+  padding: 0.5em;
+}
+
+.current-movie {
+  box-shadow: 0 0 0 1px rgb(87, 61, 92);
 }
