@@ -341,58 +341,67 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
 
     return (
       <>
-        <Timer 
-          time={GAME_TIME}
-          onTimeUp={this.finishGame}
-          timeRunningOutClassesThreshold={5}
-          timeRunningOutClasses='text-red'
-        />
-        <p>{currentQuestionIndex + 1}/{questionnaire.length}</p>
-        <Gallery
-          currentSlide={currentQuestionIndex}
-        >
-          {questionnaire && questionnaire.length > 0 && (
-            questionnaire.map(({ movie }: { movie: Movie}) => (
-              <Fragment key={movie.id}>
-                <PhotoCropper
-                  imageUrl={`${IMAGE_BASE_URL}${movie.poster_path}`}
-                  {...photoCropperProps}
-                />
-              </Fragment>
-            ))
-          )}
-        </Gallery>
-        <ul>
-          {questionnaire.map(({movie}: { movie: Movie}) => {
-            if (!results[movie.id]) {
-              return (
-                <li key={`result-${movie.id}`}>
-                  <PhotoCropper
-                    imageUrl={`${IMAGE_BASE_URL}${movie.poster_path}`}
-                    expectedImageWidth={THUMBNAIL_WIDTH}
-                  />
-                  ?: <b>Pending</b>
-                </li>
-              );
-            }
+        <div className="pure-g">
+          <div className="pure-u-1-3">
+            <Timer
+              time={GAME_TIME}
+              // time={10000000}
+              onTimeUp={this.finishGame}
+              timeRunningOutClassesThreshold={5}
+              timeRunningOutClasses='text-red'
+            />
+            <p>{currentQuestionIndex + 1}/{questionnaire.length}</p>
+          </div>
+          <div className="pure-u-1-3">
+            <Gallery
+              currentSlide={currentQuestionIndex}
+            >
+              {questionnaire && questionnaire.length > 0 && (
+                questionnaire.map(({ movie }: { movie: Movie}) => (
+                  <Fragment key={movie.id}>
+                    <PhotoCropper
+                      imageUrl={`${IMAGE_BASE_URL}${movie.poster_path}`}
+                      {...photoCropperProps}
+                    />
+                  </Fragment>
+                ))
+              )}
+            </Gallery>
+            {shouldShowOptions && (
+              <AnswerList
+                answers={currentQuestion.answers}
+                onSelect={this.onSelect}
+              />
+            )}
+          </div>
+          <div className="pure-u-1-3">
+            <ul>
+              {questionnaire.map(({movie}: { movie: Movie}) => {
+                if (!results[movie.id]) {
+                  return (
+                    <li key={`result-${movie.id}`}>
+                      <PhotoCropper
+                        imageUrl={`${IMAGE_BASE_URL}${movie.poster_path}`}
+                        expectedImageWidth={THUMBNAIL_WIDTH}
+                      />
+                      ?: <b>Pending</b>
+                    </li>
+                  );
+                }
 
-            return (
-              <li key={`result-${movie.id}`}>
-                <PhotoCropper
-                  imageUrl={`${IMAGE_BASE_URL}${movie.poster_path}`}
-                  expectedImageWidth={THUMBNAIL_WIDTH}
-                />
-                {movie.title}: <b>{results[movie.id] && results[movie.id].isCorrect ? 'Correct' : 'Incorrect'}</b>
-              </li>
-            )
-          })}
-        </ul>
-        {shouldShowOptions && (
-          <AnswerList
-            answers={currentQuestion.answers}
-            onSelect={this.onSelect}
-          />
-        )}
+                return (
+                  <li key={`result-${movie.id}`}>
+                    <PhotoCropper
+                      imageUrl={`${IMAGE_BASE_URL}${movie.poster_path}`}
+                      expectedImageWidth={THUMBNAIL_WIDTH}
+                    />
+                    {movie.title}: <b>{results[movie.id] && results[movie.id].isCorrect ? 'Correct' : 'Incorrect'}</b>
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
+        </div>
       </>
     )
   }
