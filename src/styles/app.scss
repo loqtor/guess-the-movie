@@ -51,3 +51,10 @@ body {
 .current-movie {
   box-shadow: 0 0 0 1px rgb(87, 61, 92);
 }
+
+.countdown {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-50%);
+}

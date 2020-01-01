@@ -320,11 +320,15 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
 
     if (status === GameStatus.STARTING) {
       return (
-        <Timer
-          time={START_COUNTDOWN_TIME}
-          onTimeUp={this.startGame}
-          unformatted={true}
-        />
+        <div className="countdown">
+          <h2>Get Ready!</h2>
+          <Timer
+            time={START_COUNTDOWN_TIME}
+            onTimeUp={this.startGame}
+            unformatted={true}
+            classes="text-centered"
+            />
+        </div>
       )
     }
 
