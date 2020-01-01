@@ -1,20 +1,20 @@
 import React, { Component } from 'react';
 import { generateRandomNumberFromRange } from '../../tools/util';
 
-export interface IImagePosition {
+export interface ImagePosition {
   x: number;
   y: number;
 }
 
-interface IProps {
+interface Props {
   imageUrl: string;
-  imagePosition?: IImagePosition;
+  imagePosition?: ImagePosition;
   expectedImageWidth?: number;
-  onMounted?: (position: IImagePosition) => void;
+  onMounted?: (position: ImagePosition) => void;
 }
 
-interface IState {
-  imagePosition: IImagePosition;
+interface State {
+  imagePosition: ImagePosition;
 }
 
 const POSITION_BOUNDARIES_X = {
@@ -29,8 +29,8 @@ const POSITION_BOUNDARIES_Y = {
 
 const DEFAULT_IMAGE_WIDTH = 1000;
 
-export const PhotoCropper = class PhotoCropper extends Component<IProps, IState> {
-  constructor(props: IProps) {
+export const PhotoCropper = class PhotoCropper extends Component<Props, State> {
+  constructor(props: Props) {
     super(props);
 
     const { imagePosition } = this.props;
@@ -71,7 +71,7 @@ export const PhotoCropper = class PhotoCropper extends Component<IProps, IState>
   }
 };
 
-const setImagePosition = (): IImagePosition => {
+const setImagePosition = (): ImagePosition => {
   return {
     x: generateRandomNumberFromRange(POSITION_BOUNDARIES_X.max, POSITION_BOUNDARIES_X.min),
     y: generateRandomNumberFromRange(POSITION_BOUNDARIES_Y.max, POSITION_BOUNDARIES_Y.min),

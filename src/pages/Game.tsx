@@ -12,7 +12,7 @@ import { Movie } from '../store/reducers/movies';
 import { IMAGE_BASE_URL, IMAGE_WIDTH, GAME_TIME, THUMBNAIL_WIDTH } from '../constants/config';
 import { Timer } from '../components/game/Timer';
 import { GameStatus } from '../constants/game';
-import { PhotoCropper, IImagePosition } from '../components/game/PhotoCropper';
+import { PhotoCropper, ImagePosition } from '../components/game/PhotoCropper';
 import { Gallery } from '../components/Gallery';
 import { AnswerList, Answer } from '../components/game/AnswerList';
 
@@ -32,7 +32,7 @@ interface OwnStateProps {
     [keyof: string]: Result,
   };
   shouldShowOptions: boolean;
-  currentPosterPosition?: IImagePosition;
+  currentPosterPosition?: ImagePosition;
 }
 
 interface StateProps {
@@ -116,7 +116,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     this.state = INITIAL_STATE;
   }
 
-  saveImagePosition = (currentPosterPosition: IImagePosition) => {
+  saveImagePosition = (currentPosterPosition: ImagePosition) => {
     this.setState({
       currentPosterPosition,
     });
