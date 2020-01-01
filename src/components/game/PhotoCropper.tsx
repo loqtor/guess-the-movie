@@ -71,7 +71,7 @@ export const PhotoCropper = class PhotoCropper extends Component<Props, State> {
   }
 };
 
-const setImagePosition = (): ImagePosition => {
+export const setImagePosition = (): ImagePosition => {
   return {
     x: generateRandomNumberFromRange(POSITION_BOUNDARIES_X.max, POSITION_BOUNDARIES_X.min),
     y: generateRandomNumberFromRange(POSITION_BOUNDARIES_Y.max, POSITION_BOUNDARIES_Y.min),

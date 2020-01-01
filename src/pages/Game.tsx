@@ -12,7 +12,7 @@ import { Movie } from '../store/reducers/movies';
 import { IMAGE_BASE_URL, IMAGE_WIDTH, GAME_TIME, THUMBNAIL_WIDTH } from '../constants/config';
 import { Timer } from '../components/game/Timer';
 import { GameStatus } from '../constants/game';
-import { PhotoCropper, ImagePosition } from '../components/game/PhotoCropper';
+import { PhotoCropper, ImagePosition, setImagePosition } from '../components/game/PhotoCropper';
 import { Gallery } from '../components/Gallery';
 import { AnswerList, Answer } from '../components/game/AnswerList';
 
@@ -331,12 +331,20 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       onMounted: this.saveImagePosition,
     };
 
+    /**
+     * This ensures that both the poster and the thumbnail would be cropped
+     * the same way.
+     */
     if (currentPosterPosition) {
       photoCropperProps = {
         ...photoCropperProps,
-        imagePositionX: currentPosterPosition.x,
-        imagePositionY: currentPosterPosition.y,
-      }
+        imagePosition: setImagePosition(),
+      };
+    } else {
+      photoCropperProps = {
+        ...photoCropperProps,
+        imagePosition: currentPosterPosition,
+      };
     }
 
     return (
@@ -344,8 +352,8 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
         <div className="pure-g">
           <div className="pure-u-1-3">
             <Timer
-              time={GAME_TIME}
-              // time={10000000}
+              // time={GAME_TIME}
+              time={10000000}
               onTimeUp={this.finishGame}
               timeRunningOutClassesThreshold={5}
               timeRunningOutClasses='text-red'
@@ -383,6 +391,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
                       <PhotoCropper
                         imageUrl={`${IMAGE_BASE_URL}${movie.poster_path}`}
                         expectedImageWidth={THUMBNAIL_WIDTH}
+                        imagePosition={currentPosterPosition}
                       />
                       ?: <b>Pending</b>
                     </li>
@@ -394,6 +403,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
                     <PhotoCropper
                       imageUrl={`${IMAGE_BASE_URL}${movie.poster_path}`}
                       expectedImageWidth={THUMBNAIL_WIDTH}
+                      imagePosition={currentPosterPosition}
                     />
                     {movie.title}: <b>{results[movie.id] && results[movie.id].isCorrect ? 'Correct' : 'Incorrect'}</b>
                   </li>
