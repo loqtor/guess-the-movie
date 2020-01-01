@@ -28,8 +28,20 @@ body {
   font-weight: bold;
 }
 
+.text-right {
+  text-align: right;
+}
+
+.margin-bottom {
+  margin-bottom: 0.1em;
+}
+
 .container {
   padding: 0.5em;
+}
+
+.movie-thumb {
+  margin-right: 10px;
 }
 
 .current-movie {

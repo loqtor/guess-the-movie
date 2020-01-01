@@ -17,15 +17,15 @@ export const AnswerList = (props: Props) => {
   const [ selectedAnswer, selectAnswer ] = useState(-1);
 
   return (
-    <ul>
+    <ul className="pure-menu-list">
       {answers.map((answer: Answer, index: number) => {
-        const answerClassname = classnames('Answer', {
+        const answerClassname = classnames('Answer pure-menu-item margin-bottom', {
           'Answer--correct': selectedAnswer === index && answer.isCorrect,
         });
 
         return (
           <li key={answer.id} className={answerClassname}>
-            <button onClick={() => {
+            <button className="pure-button" onClick={() => {
               selectAnswer(index);
               onSelect(answer);
             }}>
