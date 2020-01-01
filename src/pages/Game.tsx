@@ -69,7 +69,7 @@ interface Annyang {
 declare var annyang: Annyang;
 
 const INITIAL_STATE = {
-  status: GameStatus.PLAYING,
+  status: GameStatus.STARTING,
   currentQuestionIndex: 0,
   results: {},
   shouldShowOptions: false,
@@ -79,6 +79,7 @@ const INITIAL_STATE = {
  * Percentage of coincidence between result and what the movie title is.
  */
 const MATCH_THRESHOLD = 0.7;
+const START_COUNTDOWN_TIME = 3; // seconds
 
 class GameComponent extends React.Component<Props, OwnStateProps> {
   fuzzy: any;
@@ -250,6 +251,12 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     });
   }
 
+  startGame = () => {
+    this.setState({
+      status: GameStatus.PLAYING,
+    });
+  }
+
   finishGame = () => {
     annyang.abort();
 
@@ -309,6 +316,16 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
           <button className="pure-button" onClick={this.reset}>Try again!</button>
         </>
       );
+    }
+
+    if (status === GameStatus.STARTING) {
+      return (
+        <Timer
+          time={START_COUNTDOWN_TIME}
+          onTimeUp={this.startGame}
+          unformatted={true}
+        />
+      )
     }
 
     const { isLoadingMovies } = this.props;
