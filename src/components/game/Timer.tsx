@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 
 interface IProps {
   time: number;
+  timeRunningOutClasses?: string;
+  timeRunningOutClassesThreshold?: number;
   onTimeUp: () => void;
 }
 
@@ -61,7 +63,14 @@ export const Timer = class Timer extends Component<IProps, IState> {
 
   render() {
     const { timeLeft } = this.state;
+    const { timeRunningOutClasses, timeRunningOutClassesThreshold } = this.props;
+    let classes;
 
-    return (<p>{timeLeft}</p>);
+    if ((timeRunningOutClassesThreshold || timeRunningOutClassesThreshold === 0) &&
+      timeLeft <= timeRunningOutClassesThreshold) {
+      classes = timeRunningOutClasses;
+    }
+
+    return (<p className={classes}>{timeLeft}</p>);
   }
 }

@@ -341,7 +341,12 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
 
     return (
       <>
-        <Timer time={GAME_TIME} onTimeUp={this.finishGame} />
+        <Timer 
+          time={GAME_TIME}
+          onTimeUp={this.finishGame}
+          timeRunningOutClassesThreshold={5}
+          timeRunningOutClasses='text-red'
+        />
         <p>{currentQuestionIndex + 1}/{questionnaire.length}</p>
         <Gallery
           currentSlide={currentQuestionIndex}
