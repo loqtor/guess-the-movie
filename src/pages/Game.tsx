@@ -1,7 +1,6 @@
 import React from 'react';
 import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
-import classnames from 'classnames';
 import FuzzySet from 'fuzzyset.js';
 
 import { isLoadingMovies, getQuestionnaire, Question } from '../store/selectors/movies';
@@ -10,16 +9,17 @@ import { getMovies as getMoviesAction } from '../store/actions/movies';
 import { RootState } from '../store/reducers';
 import { Movie } from '../store/reducers/movies';
 
-import { IMAGE_BASE_URL, IMAGE_WIDTH, GAME_TIME, THUMBNAIL_WIDTH } from '../constants/config';
+import { IMAGE_BASE_URL, IMAGE_WIDTH, GAME_TIME } from '../constants/config';
 import { Timer } from '../components/game/Timer';
 import { GameStatus } from '../constants/game';
 import { PhotoCropper, ImagePosition, setImagePosition } from '../components/game/PhotoCropper';
 import { Gallery } from '../components/Gallery';
 import { AnswerList, Answer } from '../components/game/AnswerList';
+import { Feedback } from '../components/game/Feedback';
 
 interface OwnProps {}
 
-interface Result {
+export interface Result {
   movie: Movie;
   answer?: Answer;
   spokenAnswer?: string[];
@@ -302,22 +302,6 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       )
     }
 
-    const { questionnaire } = this.props;
-    const { results } = this.state;
-
-    if (status === GameStatus.FINISHED) {
-      return (
-        <>
-          <ul className="pure-menu-list">
-            {questionnaire.map(({movie}: { movie: Movie}) => (
-              <li className="pure-menu-item" key={`result-${movie.id}`}>{movie.title}: <b>{results[movie.id] && results[movie.id].isCorrect ? 'Correct' : 'Incorrect.'} </b></li>
-            ))}
-          </ul>
-          <button className="pure-button" onClick={this.reset}>Try again!</button>
-        </>
-      );
-    }
-
     if (status === GameStatus.STARTING) {
       return (
         <div className="countdown">
@@ -339,6 +323,8 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
         <p>Loading...</p>
       )
     }
+
+    const { questionnaire } = this.props;
 
     if (!questionnaire.length) {
       return (
@@ -369,6 +355,19 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       };
     }
 
+    const { results } = this.state;
+
+    if (status === GameStatus.FINISHED) {
+      return (
+        <Feedback
+          imagePosition={photoCropperProps.imagePosition}
+          questionnaire={questionnaire}
+          currentQuestionIndex={currentQuestionIndex}
+          results={results}
+        />
+      );
+    }
+
     return (
       <>
         <h2 className="text-centered">What's the movie?</h2>
@@ -389,7 +388,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
                     timeRunningOutClassesThreshold={5}
                     timeRunningOutClasses='text-red text-bold'
                   />
-                {currentQuestionIndex + 1}/{questionnaire.length}
+                  {currentQuestionIndex + 1}/{questionnaire.length}
                 </div>
               </div>
             </div>
@@ -417,28 +416,12 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
             )}
           </div>
           <div className="pure-u-1-3">
-            <ul className="pure-menu-list container">
-              {questionnaire.map((question: Question, index: number) => {
-                const { movie } = question;
-                const thumbnailClasses =  classnames('movie-thumb', {
-                  'current-movie': currentQuestionIndex === index,
-                });
-
-                return (
-                  <li key={`result-${movie.id}`} className="pure-menu-item">
-                    <PhotoCropper
-                      classes={thumbnailClasses}
-                      imageUrl={`${IMAGE_BASE_URL}${movie.poster_path}`}
-                      expectedImageWidth={THUMBNAIL_WIDTH}
-                      imagePosition={currentPosterPosition}
-                    />
-                    {results[movie.id] && (
-                      <span>{movie.title}: <b>{results[movie.id] && results[movie.id].isCorrect ? 'Correct' : 'Incorrect'}</b></span>
-                    )}
-                  </li>
-                )
-              })}
-            </ul>
+            <Feedback
+              imagePosition={photoCropperProps.imagePosition}
+              questionnaire={questionnaire}
+              currentQuestionIndex={currentQuestionIndex}
+              results={results}
+            />
           </div>
         </div>
       </>
