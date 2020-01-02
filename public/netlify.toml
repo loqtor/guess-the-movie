@@ -1,6 +1,6 @@
 [[redirects]]
   from = "/*"
-  to = "/index.html"
+  to = "/"
 
 [[headers]]
   # Define which paths this specific [[headers]] block will cover.
