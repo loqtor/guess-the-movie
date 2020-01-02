@@ -260,8 +260,26 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
   finishGame = () => {
     annyang.abort();
 
+    const { questionnaire } = this.props;
+    const { results } = this.state;
+
+    /**
+     * Ensures that there's an answer for every question.
+     */
+    if (Object.keys(results).length < questionnaire.length) {
+      questionnaire.forEach(({ movie } : { movie: Movie }) => {
+        if (!results[movie.id]) {
+          results[movie.id] = {
+            isCorrect: false,
+            movie,
+          } as Result;
+        }
+      });
+    }
+
     this.setState({
       status: GameStatus.FINISHED,
+      results,
     });
   }
 
@@ -359,12 +377,15 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
 
     if (status === GameStatus.FINISHED) {
       return (
-        <Feedback
-          imagePosition={photoCropperProps.imagePosition}
-          questionnaire={questionnaire}
-          currentQuestionIndex={currentQuestionIndex}
-          results={results}
-        />
+        <>
+          <Feedback
+            imagePosition={photoCropperProps.imagePosition}
+            questionnaire={questionnaire}
+            currentQuestionIndex={currentQuestionIndex}
+            results={results}
+          />
+          <button className="pure-button">Try again!</button>
+        </>
       );
     }
 
@@ -383,7 +404,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
               <div className="pure-u-1-4">
                 <div className="container">
                   <Timer
-                    time={GAME_TIME}
+                    time={10}
                     onTimeUp={this.finishGame}
                     timeRunningOutClassesThreshold={5}
                     timeRunningOutClasses='text-red text-bold'
