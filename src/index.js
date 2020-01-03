@@ -25,12 +25,12 @@ sagaMiddleware.run(rootSaga);
 ReactDOM.render(
   <Provider store={store}>
     <Router>
-      <Switch>
         <div className="App">
-          <Route exact path="/" component={Home} />
-          <Route path="/game" component={Game} />
-        </div>
-      </Switch>
+          <Switch>
+            <Route exact path="/" component={Home} />
+            <Route path="/game" component={Game} />
+          </Switch>
+      </div>
     </Router>
   </Provider>
   , document.getElementById('root'));
