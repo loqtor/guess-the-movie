@@ -59,7 +59,7 @@ export class Gallery extends React.Component<OwnProps, OwnState> {
     });
   }
 
-  componentWillUpdate(nextProps: OwnProps) {
+  UNSAFE_componentWillUpdate(nextProps: OwnProps) {
     const { currentSlide } = this.state;
     const { currentSlide: nextSlide } = nextProps;
 
