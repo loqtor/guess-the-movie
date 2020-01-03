@@ -15,6 +15,7 @@ const SWIPER_DEFAULT_OPTIONS: SwiperOptions = {
     nextEl: '.swiper-button--next',
     prevEl: '.swiper-button--prev',
   },
+  allowTouchMove: false,
 };
 
 export interface OwnProps {
