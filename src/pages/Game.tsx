@@ -404,7 +404,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
               <div className="pure-u-1-4">
                 <div className="container">
                   <Timer
-                    time={10}
+                    time={GAME_TIME}
                     onTimeUp={this.finishGame}
                     timeRunningOutClassesThreshold={5}
                     timeRunningOutClasses='text-red text-bold'
