@@ -4,3 +4,10 @@ export enum GameStatus {
   FINISHED = 'finished',
   FAILED = 'failed',
 };
+
+export enum GameError {
+  BROWSER_DENIAL = 'browser-denial',
+  USER_DENIAL = 'user-denial',
+  UNSUPPORTED = 'unsupported',
+  UNEXPECTED = 'unexpected',
+}

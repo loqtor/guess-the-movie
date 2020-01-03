@@ -11,7 +11,7 @@ import { Movie } from '../store/reducers/movies';
 
 import { IMAGE_BASE_URL, IMAGE_WIDTH, GAME_TIME } from '../constants/config';
 import { Timer } from '../components/game/Timer';
-import { GameStatus } from '../constants/game';
+import { GameStatus, GameError } from '../constants/game';
 import { PhotoCropper, ImagePosition, setImagePosition } from '../components/game/PhotoCropper';
 import { Gallery } from '../components/Gallery';
 import { AnswerList, Answer } from '../components/game/AnswerList';
@@ -27,13 +27,14 @@ export interface Result {
 }
 
 interface OwnStateProps {
-  status: GameStatus;
+  error?: GameError;
+  currentPosterPosition?: ImagePosition;
   currentQuestionIndex: number;
   results: {
     [keyof: string]: Result,
   };
   shouldShowOptions: boolean;
-  currentPosterPosition?: ImagePosition;
+  status: GameStatus;
 }
 
 interface StateProps {
@@ -75,6 +76,14 @@ const INITIAL_STATE = {
   shouldShowOptions: false,
 };
 
+const UNSUPPORTED_STATE = {
+  status: GameStatus.FAILED,
+  error: GameError.UNSUPPORTED,
+  currentQuestionIndex: 0,
+  results: {},
+  shouldShowOptions: false,
+};
+
 /**
  * Percentage of coincidence between result and what the movie title is.
  */
@@ -86,6 +95,16 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
 
   constructor(props: Props) {
     super(props);
+
+    /**
+     * When Speech Recognition is not supported Annyang is not initialised
+     * and just set to null. This prevents exceptions from happening in those browsers
+     * where SR is not supported.
+     */
+    if (!annyang) {
+      this.state = UNSUPPORTED_STATE;
+      return;
+    }
 
     const COMMANDS: { [keyof: string]: any } = {
       PASS: {
@@ -113,7 +132,10 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     });
 
     annyang.addCommands(annyangFormattedCommands);
+
     annyang.addCallback('resultNoMatch', this.handleNoMatch);
+    annyang.addCallback('errorPermissionBlocked', this.handlePermissionBlocked);
+    annyang.addCallback('errorPermissionDenied', this.handlePermissionDenied);
 
     this.state = INITIAL_STATE;
   }
@@ -241,10 +263,55 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     this.resumeGame(result);
   }
 
-  onError = () => {
+  handlePermissionBlocked = () => {
     this.setState({
       status: GameStatus.FAILED,
+      error: GameError.BROWSER_DENIAL
     });
+  }
+
+  handlePermissionDenied = () => {
+    this.setState({
+      status: GameStatus.FAILED,
+      error: GameError.USER_DENIAL,
+    });
+  }
+
+  renderError = () => {
+    const { error } = this.state;
+
+    let message = [
+      <p>An unexpected error ocurred. As an alternative try the latest Chrome on desktop or Android.</p>,
+    ];
+
+
+    if (error === GameError.BROWSER_DENIAL) {
+      message = [
+        <p>The browser did not authorize the page to use the microphone.</p>,
+        <p>Have a look at your settings or try the latest Chrome on Android or desktop.</p>,
+      ];
+    }
+
+    if (error === GameError.USER_DENIAL) {
+      message = [
+        <p>The application is driven through speech, permission to microphone is required.</p>,
+        <p>Please, enable microphone for this website and reload the page to start the game.</p>,
+      ];
+    }
+
+    if (error === GameError.UNSUPPORTED) {
+      message = [
+        <p>It seems that your browser doesn't support SpeechRecognition.</p>,
+        <p>Please try on the latest Chrome on desktop or Android or check <a href="https://caniuse.com/#feat=speech-recognition" target="blank">caniuse</a> for more info.</p>
+      ];
+    }
+
+    return (
+      <>
+        <h2 className="text-centered">Guess the movie!</h2>
+        <div className="vertically-centered-container">{message}</div>
+      </>
+    );
   }
 
   startGame = () => {
@@ -328,14 +395,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     const { status } = this.state;
 
     if (status === GameStatus.FAILED) {
-      return (
-        <div className="vertically-centered-container">
-          <p>It seems that your browser doesn't support SpeechRecognition.</p>
-          <p>
-            Please try on the latest Chrome on desktop or Android or check <a href="https://caniuse.com/#feat=speech-recognition" target="blank">caniuse</a> for more info.
-          </p>
-        </div>
-      )
+      return this.renderError();
     }
 
     if (status === GameStatus.STARTING) {
@@ -401,6 +461,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     if (status === GameStatus.FINISHED) {
       return (
         <>
+          <h2 className="text-centered">Guess the movie!</h2>
           <Feedback
             imagePosition={photoCropperProps.imagePosition}
             questionnaire={questionnaire}
@@ -414,7 +475,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
 
     return (
       <>
-        <h2 className="text-centered">What's the movie?</h2>
+        <h2 className="text-centered">Guess the movie!</h2>
         <div className="pure-g">
           <div className="pure-u-1-3">
             <div className="pure-g">
