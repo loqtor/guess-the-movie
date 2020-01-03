@@ -157,10 +157,6 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       const { title: previousMovieTitle } = this.props.questionnaire[currentQuestionIndex].movie;
       annyang.removeCommands(previousMovieTitle);
     }
-
-    if (!annyang.isListening()) {
-      annyang.start();
-    }
   }
 
   resumeGame = (result: Result) => {
@@ -293,15 +289,23 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
 
   componentDidUpdate() {
     const { questionnaire } = this.props;
-    const { currentQuestionIndex } = this.state;
+    const { currentQuestionIndex, status } = this.state;
 
     if (currentQuestionIndex === 0 && questionnaire.length > 0) {
       const titles = questionnaire.map((question: Question) => question.movie.title)
       this.fuzzy = FuzzySet(titles);
     }
 
+    if (status !== GameStatus.PLAYING) {
+      return;
+    }
+
     if (questionnaire.length > currentQuestionIndex) {
       this.updateMoviesOnCommands();
+    }
+
+    if (!annyang.isListening()) {
+      annyang.start();
     }
   }
 
