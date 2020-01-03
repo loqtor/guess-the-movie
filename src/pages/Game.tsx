@@ -16,6 +16,7 @@ import { PhotoCropper, ImagePosition, setImagePosition } from '../components/gam
 import { Gallery } from '../components/Gallery';
 import { AnswerList, Answer } from '../components/game/AnswerList';
 import { Feedback } from '../components/game/Feedback';
+import { Notification } from '../components/Notification';
 
 interface OwnProps {}
 
@@ -309,7 +310,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     return (
       <>
         <h2 className="text-centered">Guess the movie!</h2>
-        <div className="vertically-centered-container">{message}</div>
+        <Notification>{message}</Notification>
       </>
     );
   }
@@ -402,7 +403,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       return (
         <>
           <h2 className="text-centered">Guess the movie!</h2>
-          <div className="vertically-centered-container">
+          <Notification>
             <h2>Get Ready!</h2>
             <Timer
               time={START_COUNTDOWN_TIME}
@@ -410,7 +411,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
               unformatted={true}
               classes="text-centered"
               />
-          </div>
+          </Notification>
         </>
       )
     }
@@ -419,9 +420,9 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
 
     if (isLoadingMovies) {
       return (
-        <div className="vertically-centered-container">
+        <Notification>
           <p>Loading...</p>
-        </div>
+        </Notification>
       )
     }
 
@@ -429,10 +430,10 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
 
     if (!questionnaire.length) {
       return (
-        <div className="vertically-centered-container">
+        <Notification>
           <p>Sorry, the <a href="https://developers.themoviedb.org/4/getting-started/authorization" target="blank">Moviedatabase API</a> seems to not be working currently</p>
           <p> Please try again later.</p>
-        </div>
+        </Notification>
       );
     }
 
