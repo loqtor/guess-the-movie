@@ -26,8 +26,10 @@ ReactDOM.render(
   <Provider store={store}>
     <Router>
       <Switch>
-        <Route exact path="/" component={Home} />
-        <Route path="/game" component={Game} />
+        <div className="App">
+          <Route exact path="/" component={Home} />
+          <Route path="/game" component={Game} />
+        </div>
       </Switch>
     </Router>
   </Provider>
