@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactGA from 'react-ga';
 import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 import FuzzySet from 'fuzzyset.js';
@@ -104,6 +105,12 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
      */
     if (!annyang) {
       this.state = UNSUPPORTED_STATE;
+
+      ReactGA.event({
+        category: 'Error',
+        action: 'SR is not supported in this browser.',
+      });
+
       return;
     }
 
@@ -212,6 +219,11 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     this.setState({
       shouldShowOptions: true,
     });
+
+    ReactGA.event({
+      category: 'Playing events',
+      action: 'Show options',
+    });
   }
 
   handleNoMatch = (results?: any) => {
@@ -235,6 +247,12 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       movie: currentMovie,
     }
 
+    ReactGA.event({
+      category: 'Playing events',
+      action: 'Incorrect guess',
+      label: currentMovie.title,
+    });
+
     this.resumeGame(result);
   }
 
@@ -248,6 +266,12 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       movie: currentMovie,
     }
 
+    ReactGA.event({
+      category: 'Playing events',
+      action: 'Correct guess',
+      label: currentMovie.title,
+    });
+
     this.resumeGame(result);
   }
 
@@ -255,16 +279,28 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     const { currentQuestionIndex } = this.state;
     const { questionnaire } = this.props;
     const currentQuestion = questionnaire[currentQuestionIndex];
+    const isCorrect = answer.id === currentQuestion.movie.id;
     const result : Result = {
-      isCorrect: answer.id === currentQuestion.movie.id,
+      isCorrect,
       answer,
       movie: currentQuestion.movie,
     };
+
+    ReactGA.event({
+      category: 'Playing events',
+      action: 'Option selection',
+      label: `${currentQuestion.movie.title}, user selected ${answer.label}`,
+    });
 
     this.resumeGame(result);
   }
 
   handlePermissionBlocked = () => {
+    ReactGA.event({
+      category: 'Error',
+      action: 'Permission to access microphone blocked by browser.',
+    });
+
     this.setState({
       status: GameStatus.FAILED,
       error: GameError.BROWSER_DENIAL
@@ -272,6 +308,11 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
   }
 
   handlePermissionDenied = () => {
+    ReactGA.event({
+      category: 'Error',
+      action: 'Permission to access microphone blocked by user.',
+    });
+
     this.setState({
       status: GameStatus.FAILED,
       error: GameError.USER_DENIAL,
@@ -284,7 +325,6 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     let message = [
       <p>An unexpected error ocurred. As an alternative try the latest Chrome on desktop or Android.</p>,
     ];
-
 
     if (error === GameError.BROWSER_DENIAL) {
       message = [
@@ -316,8 +356,13 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
   }
 
   startGame = () => {
-    this.setState({
+  this.setState({
       status: GameStatus.PLAYING,
+    }, () => {
+      ReactGA.event({
+        category: 'App events',
+        action: 'Game started',
+      });
     });
   }
 
@@ -344,6 +389,11 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     this.setState({
       status: GameStatus.FINISHED,
       results,
+    }, () => {
+      ReactGA.event({
+        category: 'App events',
+        action: 'Game finished',
+      });
     });
   }
 
@@ -351,6 +401,11 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     const { getMovies } = this.props;
 
     getMovies();
+
+    ReactGA.event({
+      category: 'App events',
+      action: 'Try again',
+    });
 
     this.setState(INITIAL_STATE);
   }
