@@ -306,6 +306,15 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
   }
 
   componentDidMount() {
+    const { status } = this.state;
+    
+    /**
+     * No need to fetch movies in this case.
+     */
+    if (status === GameStatus.FAILED) {
+      return;
+    }
+
     const { getMovies } = this.props;
 
     getMovies();
@@ -316,13 +325,18 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
 
     if (status === GameStatus.FAILED) {
       return (
-        <p>It seems that your browser doesn't support SpeechRecognition. Please try on the latest Chrome on desktop or Android.</p>
+        <div className="vertically-centered-container">
+          <p>It seems that your browser doesn't support SpeechRecognition.</p>
+          <p>
+            Please try on the latest Chrome on desktop or Android or check <a href="https://caniuse.com/#feat=speech-recognition" target="blank">caniuse</a> for more info.
+          </p>
+        </div>
       )
     }
 
     if (status === GameStatus.STARTING) {
       return (
-        <div className="countdown">
+        <div className="vertically-centered-container">
           <h2>Get Ready!</h2>
           <Timer
             time={START_COUNTDOWN_TIME}
@@ -338,7 +352,9 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
 
     if (isLoadingMovies) {
       return (
-        <p>Loading...</p>
+        <div className="vertically-centered-container">
+          <p>Loading...</p>
+        </div>
       )
     }
 
@@ -346,7 +362,10 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
 
     if (!questionnaire.length) {
       return (
-        <p>Sorry, the movies API is not currently working.</p>
+        <div className="vertically-centered-container">
+          <p>Sorry, the <a href="https://developers.themoviedb.org/4/getting-started/authorization" target="blank">Moviedatabase API</a> seems to not be working currently</p>
+          <p> Please try again later.</p>
+        </div>
       );
     }
 
