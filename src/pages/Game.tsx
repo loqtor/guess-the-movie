@@ -472,7 +472,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
             currentQuestionIndex={currentQuestionIndex}
             results={results}
           />
-          <button className="pure-button">Try again!</button>
+          <button className="pure-button" onClick={this.reset}>Try again!</button>
         </>
       );
     }
