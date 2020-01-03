@@ -400,15 +400,18 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
 
     if (status === GameStatus.STARTING) {
       return (
-        <div className="vertically-centered-container">
-          <h2>Get Ready!</h2>
-          <Timer
-            time={START_COUNTDOWN_TIME}
-            onTimeUp={this.startGame}
-            unformatted={true}
-            classes="text-centered"
-            />
-        </div>
+        <>
+          <h2 className="text-centered">Guess the movie!</h2>
+          <div className="vertically-centered-container">
+            <h2>Get Ready!</h2>
+            <Timer
+              time={START_COUNTDOWN_TIME}
+              onTimeUp={this.startGame}
+              unformatted={true}
+              classes="text-centered"
+              />
+          </div>
+        </>
       )
     }
 
