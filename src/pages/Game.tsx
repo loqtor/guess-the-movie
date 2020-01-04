@@ -154,7 +154,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     });
   }
 
-  isItAFuzzyMatch = (results: string[]) => {
+  getFuzzyMatch = (results: string[]) => {
     if (!results || !results.length) {
       return false;
     }
@@ -162,9 +162,19 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     const { currentQuestionIndex } = this.state;
     const { questionnaire } = this.props;
     const { title: currentMovieTitle } = questionnaire[currentQuestionIndex].movie;
-    const match = results.find((result: string) => this.fuzzy.get(result) >= MATCH_THRESHOLD);
+    const match = results.find((result: string) => {
+      const matches = this.fuzzy.get(result);
 
-    return currentMovieTitle === match;
+      if (!matches) {
+        return false;
+      }
+
+      const currentMovieMatch = matches.find((match: [number, string]) => currentMovieTitle === match[1]);
+
+      return currentMovieMatch && currentMovieMatch[0] >= MATCH_THRESHOLD;
+    });
+
+    return match;
   }
 
   /**
@@ -228,11 +238,11 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
 
   handleNoMatch = (results?: any) => {
     /**
-     * Speech Recognition seems to struggle with accents.
-     * This is to make it a bit more _lax_ in how it compares strings considering
-     * that movies titles might not be the easiest to "understand".
-     */
-    if (this.isItAFuzzyMatch(results)) {
+     * This makes the game a bit more forgiving on what comes to full movie titles or accents not being fully understandable by SR.
+     * If the actual movie title matches in a MATCH_THRESHOLD percentage with what the user says, then the guess is considered correct.
+    */
+    const fuzzyMatch = this.getFuzzyMatch(results);
+    if (fuzzyMatch) {
       this.handleMatch();
       return;
     }
