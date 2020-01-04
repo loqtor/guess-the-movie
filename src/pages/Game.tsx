@@ -93,9 +93,9 @@ const UNSUPPORTED_STATE = {
 };
 
 const START_COUNTDOWN_TIME = 3; // seconds
-const MATCH_THRESHOLD = 0.4; // Percentage of coincidence between result and what the movie title is.
+const FUZZY_MATCH_THRESHOLD = 0.2; // Percentage of coincidence between result and what the movie title is.
 const ASSUMES_MATCH_THRESHOLD = 0.9;
-const SUBTITLE_PART_TO_DISPLAY_ON_HINT = 0.8; // Percentage of the subtitle to be displayed when showing a hint
+const PERCENT_OF_TITLE_TO_SHOW_ON_HINT = 0.8; // Percentage of the subtitle to be displayed when showing a hint
 const HINT_CHARACTER = '_';
 
 class GameComponent extends React.Component<Props, OwnStateProps> {
@@ -165,6 +165,8 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       return false;
     }
 
+    // console.log('Results at getFuzzyMatch: ', results);
+
     let fuzzyMatch: [number, string] = [0, ''];
     const { currentQuestionIndex } = this.state;
     const { questionnaire } = this.props;
@@ -177,7 +179,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       }
 
       const currentMovieMatch = matches.find((match: [number, string]) => currentMovieTitle === match[1]);
-      const isItAFuzzyMatch = currentMovieMatch && currentMovieMatch[0] >= MATCH_THRESHOLD;
+      const isItAFuzzyMatch = currentMovieMatch && currentMovieMatch[0] >= FUZZY_MATCH_THRESHOLD;
 
       if (isItAFuzzyMatch) {
         fuzzyMatch = currentMovieMatch;
@@ -246,7 +248,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
   }
 
   handleCurse = () => {
-    console.log('Put a dollar in that jar boy.');
+    // console.log('Put a dollar in that jar boy.');
   }
 
   handleOptionsRequest = () => {
@@ -270,7 +272,9 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     if (fuzzyMatch) {
       const { match, result } = fuzzyMatch;
 
-      if (match && match.length && match[0] > ASSUMES_MATCH_THRESHOLD) {
+      // console.log('Inside if (fuzzyMatch)', fuzzyMatch);
+
+      if (match && match.length && match[0] >= ASSUMES_MATCH_THRESHOLD) {
         this.handleMatch();
         return;
       }
@@ -280,7 +284,6 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
         return;
       }
     }
-
 
     const { questionnaire } = this.props;
     const { currentQuestionIndex } = this.state;
@@ -449,7 +452,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     const { title: currentMovieTitle } = currentQuestion.movie;
     const missingTitleFragment = currentMovieTitle.slice(fuzzyMatchingResult.length);
     const missingTitleFragmentAsArray = missingTitleFragment.split('');
-    const totalLettersToReplace = Math.floor(missingTitleFragment.length / SUBTITLE_PART_TO_DISPLAY_ON_HINT);
+    const totalLettersToReplace = Math.floor(missingTitleFragment.length / PERCENT_OF_TITLE_TO_SHOW_ON_HINT);
     const lettersIndexesReplaced: number[] = [];
 
     for (let i = 0; i < totalLettersToReplace - 1; i++) {
