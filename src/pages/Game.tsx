@@ -18,6 +18,7 @@ import { Gallery } from '../components/Gallery';
 import { AnswerList, Answer } from '../components/game/AnswerList';
 import { Feedback } from '../components/game/Feedback';
 import { Notification } from '../components/Notification';
+import { generateRandomNumberFromRange } from '../tools/util';
 
 interface OwnProps {}
 
@@ -29,14 +30,17 @@ export interface Result {
 }
 
 interface OwnStateProps {
-  error?: GameError;
   currentPosterPosition?: ImagePosition;
   currentQuestionIndex: number;
+  error?: GameError;
+  hint?: string;
   results: {
     [keyof: string]: Result,
   };
+  shouldShowHint: boolean;
   shouldShowOptions: boolean;
   status: GameStatus;
+
 }
 
 interface StateProps {
@@ -75,6 +79,7 @@ const INITIAL_STATE = {
   status: GameStatus.STARTING,
   currentQuestionIndex: 0,
   results: {},
+  shouldShowHint: false,
   shouldShowOptions: false,
 };
 
@@ -83,14 +88,15 @@ const UNSUPPORTED_STATE = {
   error: GameError.UNSUPPORTED,
   currentQuestionIndex: 0,
   results: {},
+  shouldShowHint: false,
   shouldShowOptions: false,
 };
 
-/**
- * Percentage of coincidence between result and what the movie title is.
- */
-const MATCH_THRESHOLD = 0.7;
 const START_COUNTDOWN_TIME = 3; // seconds
+const MATCH_THRESHOLD = 0.4; // Percentage of coincidence between result and what the movie title is.
+const ASSUMES_MATCH_THRESHOLD = 0.9;
+const SUBTITLE_PART_TO_DISPLAY_ON_HINT = 0.8; // Percentage of the subtitle to be displayed when showing a hint
+const HINT_CHARACTER = '_';
 
 class GameComponent extends React.Component<Props, OwnStateProps> {
   fuzzy: any;
@@ -159,10 +165,11 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       return false;
     }
 
+    let fuzzyMatch: [number, string] = [0, ''];
     const { currentQuestionIndex } = this.state;
     const { questionnaire } = this.props;
     const { title: currentMovieTitle } = questionnaire[currentQuestionIndex].movie;
-    const match = results.find((result: string) => {
+    const fuzzyMatchingResult = results.find((result: string) => {
       const matches = this.fuzzy.get(result);
 
       if (!matches) {
@@ -170,11 +177,27 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       }
 
       const currentMovieMatch = matches.find((match: [number, string]) => currentMovieTitle === match[1]);
+      const isItAFuzzyMatch = currentMovieMatch && currentMovieMatch[0] >= MATCH_THRESHOLD;
 
-      return currentMovieMatch && currentMovieMatch[0] >= MATCH_THRESHOLD;
+      if (isItAFuzzyMatch) {
+        fuzzyMatch = currentMovieMatch;
+      }
+
+      return isItAFuzzyMatch;
     });
 
-    return match;
+    if (!fuzzyMatchingResult) {
+      return;
+    }
+
+    /**
+     * SR at times returns the results with a starting space.
+     * This ensures is just the words the user said that are taken into account.
+     */
+    return {
+      result: fuzzyMatchingResult.trim(),
+      match: fuzzyMatch,
+    };
   }
 
   /**
@@ -213,6 +236,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       currentQuestionIndex: currentQuestionIndex + 1,
       status: isFinished ? GameStatus.FINISHED : GameStatus.PLAYING,
       shouldShowOptions: false,
+      shouldShowHint: false,
       currentPosterPosition: undefined,
     });
   }
@@ -237,15 +261,26 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
   }
 
   handleNoMatch = (results?: any) => {
+    const fuzzyMatch = this.getFuzzyMatch(results);
+
     /**
      * This makes the game a bit more forgiving on what comes to full movie titles or accents not being fully understandable by SR.
      * If the actual movie title matches in a MATCH_THRESHOLD percentage with what the user says, then the guess is considered correct.
-    */
-    const fuzzyMatch = this.getFuzzyMatch(results);
+     */
     if (fuzzyMatch) {
-      this.handleMatch();
-      return;
+      const { match, result } = fuzzyMatch;
+
+      if (match && match.length && match[0] > ASSUMES_MATCH_THRESHOLD) {
+        this.handleMatch();
+        return;
+      }
+
+      if (!this.state.shouldShowHint) {
+        this.showHint(result);
+        return;
+      }
     }
+
 
     const { questionnaire } = this.props;
     const { currentQuestionIndex } = this.state;
@@ -366,7 +401,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
   }
 
   startGame = () => {
-  this.setState({
+    this.setState({
       status: GameStatus.PLAYING,
     }, () => {
       ReactGA.event({
@@ -406,6 +441,44 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       });
     });
   }
+
+  createHint = (fuzzyMatchingResult: string) => {
+    const { currentQuestionIndex } = this.state;
+    const { questionnaire } = this.props;
+    const currentQuestion = questionnaire[currentQuestionIndex];
+    const { title: currentMovieTitle } = currentQuestion.movie;
+    const missingTitleFragment = currentMovieTitle.slice(fuzzyMatchingResult.length);
+    const missingTitleFragmentAsArray = missingTitleFragment.split('');
+    const totalLettersToReplace = Math.floor(missingTitleFragment.length / SUBTITLE_PART_TO_DISPLAY_ON_HINT);
+    const lettersIndexesReplaced: number[] = [];
+
+    for (let i = 0; i < totalLettersToReplace - 1; i++) {
+      let letterIndexToReplace = generateRandomNumberFromRange(missingTitleFragment.length - 1, 0);
+
+      /**
+       * To ensure that the same character is not attempted to be replaced twice and the right amount of letters are replaced
+       * and that spaces are not being replaced with the HINT_CHARATER
+       */
+      while (lettersIndexesReplaced.indexOf(letterIndexToReplace) !== -1 || missingTitleFragment.charAt(letterIndexToReplace) === ' ') {
+        letterIndexToReplace = generateRandomNumberFromRange(missingTitleFragment.length - 1, 0);
+      }
+
+      missingTitleFragmentAsArray[letterIndexToReplace] = HINT_CHARACTER;
+    }
+
+    return `${currentMovieTitle.slice(0, fuzzyMatchingResult.length)}${missingTitleFragmentAsArray.join('')}`;
+  }
+
+  showHint = (fuzzyMatchingResult: string) => {
+    const hint = this.createHint(fuzzyMatchingResult);
+
+    this.setState({
+      shouldShowHint: true,
+      shouldShowOptions: false,
+      hint,
+    });
+  }
+
 
   reset = () => {
     const { getMovies } = this.props;
@@ -502,7 +575,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       );
     }
 
-    const { currentQuestionIndex, currentPosterPosition, shouldShowOptions } = this.state;
+    const { currentQuestionIndex, currentPosterPosition, hint, shouldShowOptions, shouldShowHint } = this.state;
     const currentQuestion = questionnaire[currentQuestionIndex];
     let photoCropperProps: any = {
       expectedImageWidth: IMAGE_WIDTH,
@@ -581,7 +654,13 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
                 ))
               )}
             </Gallery>
-            <h3>If you need help, just say "show options"</h3>
+            {shouldShowHint && (
+              <>
+                <h3>So close! See the hint for the full title!</h3>
+                <p>{hint}</p>
+              </>
+            )}
+            {!shouldShowHint && <h3>If you need help, just say "show options"</h3>}
             {shouldShowOptions && (
               <AnswerList
                 answers={currentQuestion.answers}
