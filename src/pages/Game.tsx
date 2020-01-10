@@ -76,22 +76,29 @@ interface Annyang {
 
 declare var annyang: Annyang;
 
-const INITIAL_STATE = {
+const BASE_STATE = {
   status: GameStatus.AUTHORIZING,
   currentQuestionIndex: 0,
   results: {},
   shouldShowHint: false,
   shouldShowOptions: false,
+}
+
+const INITIAL_STATE = {
+  ...BASE_STATE,
 };
 
 const UNSUPPORTED_STATE = {
+  ...BASE_STATE,
   status: GameStatus.FAILED,
   error: GameError.UNSUPPORTED,
-  currentQuestionIndex: 0,
-  results: {},
-  shouldShowHint: false,
-  shouldShowOptions: false,
 };
+
+const RESET_STATE = {
+  ...BASE_STATE,
+  status: GameStatus.STARTING,
+};
+
 
 const COUNTDOWN_TIME = 3; // seconds
 const FUZZY_MATCH_THRESHOLD = 0.3; // Percentage of coincidence between result and what the movie title is.
@@ -508,7 +515,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       action: 'Try again',
     });
 
-    this.setState(INITIAL_STATE);
+    this.setState(RESET_STATE);
   }
 
   componentDidUpdate() {
