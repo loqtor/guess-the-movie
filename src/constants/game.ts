@@ -1,4 +1,5 @@
 export enum GameStatus {
+  AUTHORIZING = 'authorizing',
   STARTING = 'starting',
   PLAYING = 'playing',
   FINISHED = 'finished',

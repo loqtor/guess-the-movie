@@ -69,6 +69,7 @@ interface Annyang {
   abort: () => void;
   addCommands: (commands: AnnyangCommands) => void;
   removeCommands: (command: string) => void;
+  removeCallback: (type: string, callback?: () => {}) => void;
   addCallback: (event: string, callback: () => void) => void;
   isListening: () => boolean;
 }
@@ -76,7 +77,7 @@ interface Annyang {
 declare var annyang: Annyang;
 
 const INITIAL_STATE = {
-  status: GameStatus.STARTING,
+  status: GameStatus.AUTHORIZING,
   currentQuestionIndex: 0,
   results: {},
   shouldShowHint: false,
@@ -148,6 +149,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
 
     annyang.addCommands(annyangFormattedCommands);
 
+    annyang.addCallback('start', this.handleStart);
     annyang.addCallback('resultNoMatch', this.handleNoMatch);
     annyang.addCallback('errorPermissionBlocked', this.handlePermissionBlocked);
     annyang.addCallback('errorPermissionDenied', this.handlePermissionDenied);
@@ -239,6 +241,21 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       shouldShowOptions: false,
       shouldShowHint: false,
       currentPosterPosition: undefined,
+    });
+  }
+
+  handleStart = () => {
+    /**
+     * Since we attempt to restart annyang when it might be no longer listening
+     * (because of SR things) `onStart` event could be triggered again and make the 
+     * countdown appear halfway through the game.
+     * This is to avoid that problem, if the user is already playing, then this event
+     * does nothing.
+     */
+    this.setState({
+      status: GameStatus.STARTING,
+    }, () => {
+      annyang.removeCallback('start');
     });
   }
 
@@ -503,16 +520,16 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       this.fuzzy = FuzzySet(titles);
     }
 
+    if (status === GameStatus.STARTING || !annyang.isListening()) {
+      annyang.start();
+    }
+
     if (status !== GameStatus.PLAYING) {
       return;
     }
 
     if (questionnaire.length > currentQuestionIndex) {
       this.updateMoviesOnCommands();
-    }
-
-    if (!annyang.isListening()) {
-      annyang.start();
     }
   }
 
@@ -536,6 +553,18 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
 
     if (status === GameStatus.FAILED) {
       return this.renderError();
+    }
+
+    if (status === GameStatus.AUTHORIZING) {
+      return (
+        <>
+          <h2 className="text-centered">Guess the movie!</h2>
+          <Notification>
+            <h2>This game uses Speech Recognition for playing.</h2>
+            <p>Please allow the microphone to be used on this page to start the game.</p>
+          </Notification>
+        </>
+      );
     }
 
     if (status === GameStatus.STARTING) {
