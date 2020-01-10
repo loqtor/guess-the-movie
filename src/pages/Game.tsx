@@ -92,11 +92,12 @@ const UNSUPPORTED_STATE = {
   shouldShowOptions: false,
 };
 
-const START_COUNTDOWN_TIME = 3; // seconds
-const FUZZY_MATCH_THRESHOLD = 0.2; // Percentage of coincidence between result and what the movie title is.
-const ASSUMES_MATCH_THRESHOLD = 0.9;
-const PERCENT_OF_TITLE_TO_SHOW_ON_HINT = 0.8; // Percentage of the subtitle to be displayed when showing a hint
+const COUNTDOWN_TIME = 3; // seconds
+const FUZZY_MATCH_THRESHOLD = 0.3; // Percentage of coincidence between result and what the movie title is.
+const MATCH_THRESHOLD = 0.9;
+const HINT_PERCENT_TO_REPLACE = 20; // Percentage of the subtitle to be displayed when showing a hint.
 const HINT_CHARACTER = '_';
+const HINT_REPLACEABLE_CHARACTERS = /^[a-zA-Z0-9]+$/; // Only Alphanumeric characters are to be replaced for hints.
 
 class GameComponent extends React.Component<Props, OwnStateProps> {
   fuzzy: any;
@@ -164,8 +165,6 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     if (!results || !results.length) {
       return false;
     }
-
-    // console.log('Results at getFuzzyMatch: ', results);
 
     let fuzzyMatch: [number, string] = [0, ''];
     const { currentQuestionIndex } = this.state;
@@ -248,7 +247,6 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
   }
 
   handleCurse = () => {
-    // console.log('Put a dollar in that jar boy.');
   }
 
   handleOptionsRequest = () => {
@@ -270,17 +268,15 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
      * If the actual movie title matches in a MATCH_THRESHOLD percentage with what the user says, then the guess is considered correct.
      */
     if (fuzzyMatch) {
-      const { match, result } = fuzzyMatch;
+      const { match } = fuzzyMatch;
 
-      // console.log('Inside if (fuzzyMatch)', fuzzyMatch);
-
-      if (match && match.length && match[0] >= ASSUMES_MATCH_THRESHOLD) {
+      if (match && match.length && match[0] >= MATCH_THRESHOLD) {
         this.handleMatch();
         return;
       }
 
       if (!this.state.shouldShowHint) {
-        this.showHint(result);
+        this.showHint();
         return;
       }
     }
@@ -445,35 +441,37 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     });
   }
 
-  createHint = (fuzzyMatchingResult: string) => {
+  createHint = () => {
     const { currentQuestionIndex } = this.state;
     const { questionnaire } = this.props;
     const currentQuestion = questionnaire[currentQuestionIndex];
     const { title: currentMovieTitle } = currentQuestion.movie;
-    const missingTitleFragment = currentMovieTitle.slice(fuzzyMatchingResult.length);
-    const missingTitleFragmentAsArray = missingTitleFragment.split('');
-    const totalLettersToReplace = Math.floor(missingTitleFragment.length / PERCENT_OF_TITLE_TO_SHOW_ON_HINT);
+    const currentMovieTitleAsArray = currentMovieTitle.split('');
+    const totalLettersToReplace = Math.ceil(currentMovieTitle.length * HINT_PERCENT_TO_REPLACE / 100);
     const lettersIndexesReplaced: number[] = [];
 
-    for (let i = 0; i < totalLettersToReplace - 1; i++) {
-      let letterIndexToReplace = generateRandomNumberFromRange(missingTitleFragment.length - 1, 0);
+
+    for (let i = 0; i < totalLettersToReplace; i++) {
+      let letterIndexToReplace = generateRandomNumberFromRange(currentMovieTitle.length - 1, 0);
+      let characterToReplace = currentMovieTitle.charAt(letterIndexToReplace);
 
       /**
-       * To ensure that the same character is not attempted to be replaced twice and the right amount of letters are replaced
-       * and that spaces are not being replaced with the HINT_CHARATER
+       * To ensure that the same character is not attempted to be replaced twice, the right amount of letters are replaced
+       * and only HINT_REPLACEABLE_CHARACTERS are being replaced with the HINT_CHARATER
        */
-      while (lettersIndexesReplaced.indexOf(letterIndexToReplace) !== -1 || missingTitleFragment.charAt(letterIndexToReplace) === ' ') {
-        letterIndexToReplace = generateRandomNumberFromRange(missingTitleFragment.length - 1, 0);
+      while (lettersIndexesReplaced.indexOf(letterIndexToReplace) !== -1 || !HINT_REPLACEABLE_CHARACTERS.test(characterToReplace)) {
+        letterIndexToReplace = generateRandomNumberFromRange(currentMovieTitle.length - 1, 0);
+        characterToReplace = currentMovieTitle.charAt(letterIndexToReplace);
       }
 
-      missingTitleFragmentAsArray[letterIndexToReplace] = HINT_CHARACTER;
+      currentMovieTitleAsArray[letterIndexToReplace] = HINT_CHARACTER;
     }
 
-    return `${currentMovieTitle.slice(0, fuzzyMatchingResult.length)}${missingTitleFragmentAsArray.join('')}`;
+    return `${currentMovieTitleAsArray.join('')}`;
   }
 
-  showHint = (fuzzyMatchingResult: string) => {
-    const hint = this.createHint(fuzzyMatchingResult);
+  showHint = () => {
+    const hint = this.createHint();
 
     this.setState({
       shouldShowHint: true,
@@ -547,7 +545,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
           <Notification>
             <h2>Get Ready!</h2>
             <Timer
-              time={START_COUNTDOWN_TIME}
+              time={COUNTDOWN_TIME}
               onTimeUp={this.startGame}
               unformatted={true}
               classes="text-centered"
