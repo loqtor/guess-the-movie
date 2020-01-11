@@ -101,8 +101,8 @@ const RESET_STATE = {
 
 
 const COUNTDOWN_TIME = 3; // seconds
-const FUZZY_MATCH_THRESHOLD = 0.3; // Percentage of coincidence between result and what the movie title is.
-const MATCH_THRESHOLD = 0.9;
+const FUZZY_MATCH_THRESHOLD = 0.2; // Percentage of coincidence between result and what the movie title is.
+const MATCH_THRESHOLD = 0.8;
 const HINT_PERCENT_TO_REPLACE = 20; // Percentage of the subtitle to be displayed when showing a hint.
 const HINT_CHARACTER = '_';
 const HINT_REPLACEABLE_CHARACTERS = /^[a-zA-Z0-9]+$/; // Only Alphanumeric characters are to be replaced for hints.
@@ -157,9 +157,9 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     annyang.addCommands(annyangFormattedCommands);
 
     annyang.addCallback('start', this.handleStart);
-    annyang.addCallback('resultNoMatch', this.handleNoMatch);
     annyang.addCallback('errorPermissionBlocked', this.handlePermissionBlocked);
     annyang.addCallback('errorPermissionDenied', this.handlePermissionDenied);
+    annyang.addCallback('resultNoMatch', this.handleNoMatch);
 
     this.state = INITIAL_STATE;
   }
@@ -274,6 +274,13 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
   }
 
   handleOptionsRequest = () => {
+    /**
+     * If the hint is being displayed, the user cannot see the options.
+     */
+    if (this.state.shouldShowHint) {
+      return;
+    }
+
     this.setState({
       shouldShowOptions: true,
     });
@@ -285,6 +292,15 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
   }
 
   handleNoMatch = (results?: any) => {
+    /**
+     * This is to prevent that user's voice gets picked up after he's answered the last
+     * question. This prevents random audio being taken and the game attempting to go
+     * to the next question when there's not one.
+     */
+    if (this.state.status !== GameStatus.PLAYING) {
+      return;
+    }
+
     const fuzzyMatch = this.getFuzzyMatch(results);
 
     /**
