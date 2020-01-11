@@ -2,6 +2,7 @@ export enum GameStatus {
   AUTHORIZING = 'authorizing',
   STARTING = 'starting',
   PLAYING = 'playing',
+  GUESSING = 'guessing',
   FINISHED = 'finished',
   FAILED = 'failed',
 };

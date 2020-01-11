@@ -106,6 +106,7 @@ const MATCH_THRESHOLD = 0.8;
 const HINT_PERCENT_TO_REPLACE = 20; // Percentage of the subtitle to be displayed when showing a hint.
 const HINT_CHARACTER = '_';
 const HINT_REPLACEABLE_CHARACTERS = /^[a-zA-Z0-9]+$/; // Only Alphanumeric characters are to be replaced for hints.
+const ENABLE_GUESSING_COMMAND = 'yo';
 
 class GameComponent extends React.Component<Props, OwnStateProps> {
   fuzzy: any;
@@ -130,6 +131,14 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     }
 
     const COMMANDS: { [keyof: string]: any } = {
+      GUESS: {
+        phrases: [ENABLE_GUESSING_COMMAND],
+        callback: this.handleGuessRequest,
+      },
+      OPTIONS: {
+        phrases: ['show options'],
+        callback: this.handleOptionsRequest,
+      },
       PASS: {
         phrases: ['pass', 'next', 'don\'t know'],
         callback: this.handlePass,
@@ -138,12 +147,8 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
         phrases: ['fuck', 'shit', 'motherfucker'],
         callback: this.handleCurse, 
       },
-      OPTIONS: {
-        phrases: ['show options'],
-        callback: this.handleOptionsRequest,
-      },
     };
-
+    
     const annyangFormattedCommands: { [keyof: string]: any } = {};
 
     Object.keys(COMMANDS).forEach((commandKey: any) => {
@@ -156,10 +161,22 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
 
     annyang.addCommands(annyangFormattedCommands);
 
-    annyang.addCallback('start', this.handleStart);
     annyang.addCallback('errorPermissionBlocked', this.handlePermissionBlocked);
     annyang.addCallback('errorPermissionDenied', this.handlePermissionDenied);
-    annyang.addCallback('resultNoMatch', this.handleNoMatch);
+    annyang.addCallback('start', this.handleStart);
+    annyang.addCallback('resultNoMatch', () => {
+      const { status } = this.state;
+
+      /**
+       * Only attempt fuzzy matches once the user has said
+       * "The movie is"
+       */
+      if (status !== GameStatus.GUESSING) {
+        return;
+      }
+
+      this.handleNoMatch();
+    });
 
     this.state = INITIAL_STATE;
   }
@@ -223,8 +240,17 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
 
     const { currentQuestionIndex } = this.state;
     const { title: currentMovieTitle } = questionnaire[currentQuestionIndex].movie;
+    const movieTitleCallback = () => {
+      const { status } = this.state;
 
-    annyang.addCommands({ [currentMovieTitle.toLocaleLowerCase()]: this.handleMatch } as AnnyangCommands);
+      if (status !== GameStatus.GUESSING) {
+        return;
+      }
+
+      this.handleMatch();
+    }
+
+    annyang.addCommands({ [currentMovieTitle.toLocaleLowerCase()]: movieTitleCallback } as AnnyangCommands);
 
     if (currentQuestionIndex >= 1) {
       const { title: previousMovieTitle } = this.props.questionnaire[currentQuestionIndex].movie;
@@ -266,11 +292,10 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     });
   }
 
-  handlePass = () => {
-    this.handleNoMatch();
-  }
-
-  handleCurse = () => {
+  handleGuessRequest = () => {
+    this.setState({
+      status: GameStatus.GUESSING,
+    });
   }
 
   handleOptionsRequest = () => {
@@ -289,6 +314,13 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       category: 'Playing events',
       action: 'Show options',
     });
+  }
+
+  handlePass = () => {
+    this.handleNoMatch();
+  }
+
+  handleCurse = () => {
   }
 
   handleNoMatch = (results?: any) => {
@@ -341,6 +373,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
   }
 
   handleMatch = () => {
+    debugger;
     const { currentQuestionIndex } = this.state;
     const { questionnaire } = this.props;
     const currentMovie = questionnaire[currentQuestionIndex].movie;
@@ -691,6 +724,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
                   {currentQuestionIndex + 1}/{questionnaire.length}
                 </div>
               </div>
+              
             </div>
           </div>
           <div className="pure-u-1-3">
@@ -707,6 +741,10 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
                 ))
               )}
             </Gallery>
+            {status === GameStatus.GUESSING ? (
+              <h3>Take a guess now!</h3>
+            ) : 
+              <h3>Say "{ENABLE_GUESSING_COMMAND}" when you are ready to take a guess</h3>}
             {shouldShowHint && (
               <>
                 <h3>So close! See the hint for the full title!</h3>
