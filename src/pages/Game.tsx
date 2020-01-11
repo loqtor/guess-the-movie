@@ -70,7 +70,7 @@ interface Annyang {
   addCommands: (commands: AnnyangCommands) => void;
   removeCommands: (command: string) => void;
   removeCallback: (type: string, callback?: () => {}) => void;
-  addCallback: (event: string, callback: () => void) => void;
+  addCallback: (event: string, callback: (results?: string[]) => void) => void;
   isListening: () => boolean;
 }
 
@@ -164,7 +164,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     annyang.addCallback('errorPermissionBlocked', this.handlePermissionBlocked);
     annyang.addCallback('errorPermissionDenied', this.handlePermissionDenied);
     annyang.addCallback('start', this.handleStart);
-    annyang.addCallback('resultNoMatch', () => {
+    annyang.addCallback('resultNoMatch', (results?: string[]) => {
       const { status } = this.state;
 
       /**
@@ -175,7 +175,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
         return;
       }
 
-      this.handleNoMatch();
+      this.handleNoMatch(results);
     });
 
     this.state = INITIAL_STATE;
@@ -329,7 +329,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
      * question. This prevents random audio being taken and the game attempting to go
      * to the next question when there's not one.
      */
-    if (this.state.status !== GameStatus.PLAYING) {
+    if (this.state.status !== GameStatus.GUESSING) {
       return;
     }
 
@@ -373,7 +373,6 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
   }
 
   handleMatch = () => {
-    debugger;
     const { currentQuestionIndex } = this.state;
     const { questionnaire } = this.props;
     const currentMovie = questionnaire[currentQuestionIndex].movie;
@@ -748,7 +747,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
             {shouldShowHint && (
               <>
                 <h3>So close! See the hint for the full title!</h3>
-                <p>{hint}</p>
+                <h3>{hint}</h3>
               </>
             )}
             {!shouldShowHint && <h3>If you need help, just say "show options"</h3>}
