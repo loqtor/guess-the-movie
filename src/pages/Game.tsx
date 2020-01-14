@@ -109,6 +109,7 @@ const HINT_REPLACEABLE_CHARACTERS = /^[a-zA-Z0-9]+$/; // Only Alphanumeric chara
 
 class GameComponent extends React.Component<Props, OwnStateProps> {
   fuzzy: any;
+  timeLeft: number = GAME_TIME;
 
   constructor(props: Props) {
     super(props);
@@ -450,6 +451,10 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     });
   }
 
+  updateTimeLeft = (timeLeft: number) => {
+    this.timeLeft = timeLeft;
+  }
+
   finishGame = () => {
     annyang.abort();
 
@@ -684,6 +689,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
                 <div className="container">
                   <Timer
                     time={GAME_TIME}
+                    onTick={this.updateTimeLeft}
                     onTimeUp={this.finishGame}
                     timeRunningOutClassesThreshold={5}
                     timeRunningOutClasses='text-red text-bold'
