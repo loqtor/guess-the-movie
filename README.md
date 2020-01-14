@@ -1,12 +1,12 @@
 # Guess the Movie
 
-Questionnaire game that can be played through speech. :)
+Quiz game that can be played through speech. :)
 
-Currently a work in progress but getting there.
+Guess the movie from its poster.
 
 ## Why?
 
-An experiment to test the SpeechRecognition API by using a [React Component](https://github.com/loqtor/react-speech-recognizer) I put together for that.
+An experiment to test the Web Speech API's Speech to Text features.
 
 ## How?
 
@@ -18,36 +18,43 @@ The application requests two sets of movies from different random pages in the A
 
 The application is built using my [boilerplate](https://github.com/loqtor/react-boilerplate) (based on [Create React App](https://github.com/facebook/create-react-app)) with `redux` and `redux-saga` for state management and effects handling (or whatever you'd like to call it).
 
-## Current status
+For Speech Recognition it uses:
 
-[`react-speech-recognizer`](https://github.com/loqtor/react-speech-recognizer) works fine and does what it's supposed to. However, there are bits an pieces referred to handling the results you get out of the `SpeechRecognizer` that need to be worked on:
+- [Annyang](https://github.com/TalAter/annyang): Library that uses the Web Speech API to detect when a user said a specific command.
+- [fuzzyset.js](https://glench.github.io/fuzzyset.js/): Library to match strings _fuzzily_.
 
-1 - **It's not fully exact**. The many possibilities you get back implies a big cleaning exercise.
-2 - **It struggles with accents**. So, targeting a strict match might not be the way to go to keep the game engaging.
+### Current status
 
-With this in mind there's currently 3 branches with different instances on each:
+There are currently two versions of the game:
 
-1 - `develop`: Instead of using Speech Recognition is just showing movie options.
-2 - `feature/annyang`: Library that takes commands as strings and runs callbacks when they are called. Seems more stable and polished than what I did. But still, the technology itself is a bit fuzzy yet, hence it's not a 100% accurate (getting `noMatch` event triggered most of the time).
-3 - `feature/annyang-fuzzyset`: Since the technology is not really that exact, the `noMatch` handler will be performing a second _fuzzy_ comparison to see if the user was correct or not.
+- [No keyphrasee one](https://guess-the-movie-dev.netlify.com): It just listens to everything you say and assumes you are trying to guess, unless you said a specific command.
+- [Keyphrase one](https://guess-the-movie-keyphrase-dev.netlify.com): You need to say "yo" and wait for the game to say "take a guess" for your speech to be taken as a guess.
 
-### Current commands
+The first one can currently be found on [`develop`](https://github.com/loqtor/guess-the-movie) and the one with the keyphrase is currently under [`feature/keyphrase-fuzzymatching`](https://github.com/loqtor/guess-the-movie/tree/feature/keyphrase-fuzzy-matching).
+
+#### Commands
 
 - `next`: Take you to the next movie to be guessed (should work with `pass` and `I don't know` as well).
+- `show options`: It shows you three possible alternatives that you can then say and try to guess from.
 - [anything_else]: Assumes is the guess and tries to match it to the movie.
+
+#### Hint
+
+Fuzzyset is used to determine if the user is _close_ to the movie title. If so, then we show the movie title with some characters replaced as a hint for the user to take another guess.
 
 ## What's next?
 
 ### Relatively easy stuff
 
 1. Add the possibility to show _bonus_ questions to the user (i.e.: After answering 3 in a row get an extra question).
-2. Add an `options` command for the user to see three possible movies the poster would belong to.
-3. Add capability ot recognize cursing and just shows some sort of pun to the user (without interrupting the game).
+2. Add capability to recognize cursing and just shows some sort of pun to the user (without interrupting the game).
 
 ### Distant future releases
 
 4. Profile - Let the user create an account.
 5. Challenge - Share your questionnaire with a friend so you can compete with him.
+
+-----------------------------------------------
 
 # Create React App stuff below.
 
