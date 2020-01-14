@@ -1,0 +1,82 @@
+// ==============
+// $TOGGLE SWITCH
+// ==============
+
+// @NOTE:
+// Can be a checkbox element or a radio button but obviously
+// using a radio button defeats the purpose of a toggle entirely.
+
+// @USAGE:
+// <label for="awesome_id" class="Toggle">
+//   <input type="checkbox" id="awesome_id" class="Toggle-input">
+//   <span class="Toggle-label">Turn me on, baby</span>
+// </label>
+
+// <label>
+.Toggle {
+  display: inline-block;
+  user-select: none;
+  cursor: pointer;
+}
+
+// <span> acting as the label
+.Toggle-label {
+  @extend %font-heading !optional;
+  @include font(18px, 25px);
+  position: relative;
+  display: inline-block;
+  color: $white;
+  padding-left: 52px;
+}
+
+// say goodbye to the real input
+.Toggle-input {
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  position: absolute;
+  z-index: -1;
+}
+
+// say hello to the fake input
+.Toggle-label::before,
+.Toggle-label::after {
+  content: '';
+  display: block;
+  position: absolute;
+}
+
+.Toggle-label::before {
+  width: 42px;
+  height: 25px;
+  border-radius: 5px;
+  background-color: $form-element-disabled-color;
+  box-shadow: inset 0 0 0 2px darken($form-element-disabled-color, 5%);
+  padding: 2px;
+  left: 0;
+
+  transition: all 0.2s ease(in-out-expo);
+}
+
+.Toggle-label::after {
+  width: 17px;
+  height: 17px;
+  border-radius: 3px;
+  background-color: $white;
+  top: 4px;
+  left: 4px;
+  transform: translateX(0%);
+  transition: transform 0.2s ease(in-out-expo);
+}
+
+.Toggle-input:checked + .Toggle-label::before,
+.Toggle-input.is-checked + .Toggle-label::before {
+  background-color: $form-element-focus-color;
+  box-shadow: inset 0 0 0 2px darken($form-element-focus-color, 5%);
+}
+
+.Toggle-input:checked + .Toggle-label::after,
+.Toggle-input.is-checked + .Toggle-label::after {
+  transform: translateX(100%);
+}

@@ -1,0 +1,102 @@
+// ==========================================
+// LAYOUT TYPE
+// ==========================================
+// Used for setting up the layout you need
+// for your website based on `settings/layout`.
+//
+// Do not edit the mixin structure but feel free
+// to tweak the layout you choose as you see fit.
+// ==========================================
+
+@mixin layout-type($string: "default") {
+  @if $string == "default" {
+    // ==========================================
+    // Default "vanilla" layout
+    // ==========================================
+
+    body {
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      margin: 0;
+    }
+  } @else if $string == "sticky" {
+    // ==========================================
+    // Sticky Footer Layout
+    // ==========================================
+    // The header and footer are static but if
+    // the page content is too short, the footer
+    // is always stuck to the bottom of the window.
+    // ex: https://jsfiddle.net/Lsb6dk14/
+    //
+    // Note: Requires specific classes, see below.
+    // ==========================================
+
+    html {
+      height: 100%;
+    }
+
+    body {
+      height: 100%;
+      min-height: 100vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .Main {
+      flex-grow: 1;
+      flex-shrink: 0;
+    }
+
+    .Header,
+    .Footer {
+      flex: none;
+    }
+  } @else if $string == "fixed" {
+    // ==========================================
+    // Persistent Header & Footer
+    // ==========================================
+    // Header and footer are always present and
+    // the content area between is scrollable.
+    // ex: https://jsfiddle.net/osvx1zoo/3/
+    //
+    // Note: test extensively in IE!
+    // 1. If using a framework you may need to apply this to a wrapper div instead of body.
+    // 2. We don't want persistent header and footer on mobile landscape (<768px).
+    // Requires specific classes, see below.
+    // ==========================================
+
+    html, body {
+      margin: 0;
+      height: 100%;
+      min-height: 100%;
+    }
+
+    body { // 1.
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 100vh;
+      width: 100%;
+    }
+
+    .Main {
+      flex-grow: 1;
+      @media (max-width: #{$breakpoint1 - $infinitesimal}) and (orientation: portrait) { // 2.
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+    }
+
+    .Header,
+    .Footer {
+      flex: none;
+    }
+  } @else {
+    @error "Error: '#{$string}' is not a valid layout type found in `settings/layout.scss`";
+  }
+}
+
+@include layout-type($layout-type);

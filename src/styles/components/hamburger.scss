@@ -1,0 +1,50 @@
+// ============
+// $HAMBURGER
+// ============
+// animates from burger to cross
+
+
+// Triple bun burger ============
+.Hamburger {
+  position: relative;
+  z-index: 2;
+  display: inline-block;
+  width: 20px;
+  height: 14px;
+  transform: rotate(0);
+  transition: 0.25s ease-in-out;
+  cursor: pointer;
+
+  span {
+    position: absolute;
+    display: block;
+    height: 2px;
+    width: 100%;
+    background-color: $violet;
+    opacity: 1;
+    left: 0;
+    transform: rotate(0);
+    transition: all 0.25s ease-in-out;
+    &:nth-child(1) { top: 0; }
+    &:nth-child(4) { top: 12px; }
+
+    &:nth-child(2),
+    &:nth-child(3) {
+      top: 6px;
+    }
+  }
+
+  // animate to closing 'X' ============
+  .SomeParentElementIfRequired.is-open & {
+    span {
+      &:nth-child(1),
+      &:nth-child(4) {
+        top: 6px;
+        width: 0;
+        left: 50%;
+      }
+      &:nth-child(2) { transform: rotate(45deg); }
+      &:nth-child(3) { transform: rotate(-45deg); }
+    }
+  }
+}

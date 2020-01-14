@@ -1,0 +1,90 @@
+// ============
+// $CHECKBOX
+// ============
+
+// Usage:
+// <label class="Checkbox" for="male">
+//   <input class="Checkbox-input" type="checkbox" id="male">
+//   <span class="Checkbox-label">Content here</span>
+// </label>
+// <label class="Checkbox" for="female">
+//   <input class="Checkbox-input" type="checkbox" id="female">
+//   <span class="Checkbox-label">Content here</span>
+// </label>
+
+$checkbox-size: 16px;
+
+// <label>
+.Checkbox {
+  display: block;
+  user-select: none;
+  cursor: pointer;
+
+  // space them out if they're next to each other
+  &:not(:last-child) {
+    margin-bottom: $h / 2;
+  }
+}
+
+// <span> acting as the label
+.Checkbox-label {
+  position: relative;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: flex-start;
+  padding: $form-element-border-width;
+}
+
+// say goodbye to the real input
+.Checkbox-input {
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  position: absolute;
+  z-index: -1;
+}
+
+// say hello to the fake input
+.Checkbox-label::before {
+  @extend %icon !optional;
+  @extend .icon-check:before !optional; // NOTE edit this name according to your icons
+  @include font(18px, 10px);
+  content: ' ';
+  display: block;
+  text-align: center;
+  color: transparent;
+  width: $checkbox-size;
+  height: $checkbox-size;
+  border: 3px solid $white;
+  box-shadow: 0 0 0 1px $form-element-disabled-color;
+  margin-right: $h / 2;
+  margin-top: 3px;
+  border-radius: 2px;
+}
+
+
+// ============
+// STATES
+// ============
+.Checkbox-input:focus + .Checkbox-label::before {
+  box-shadow: 0 0 0 $form-element-border-width $form-element-focus-color;
+}
+
+.Checkbox-input:checked + .Checkbox-label::before,
+.Checkbox-input.is-checked + .Checkbox-label::before {
+  color: $form-element-focus-color;
+  box-shadow: 0 0 0 $form-element-border-width $form-element-focus-color;
+}
+
+// ============
+// MODIFIERS
+// ============
+.Checkbox--inline {
+  display: inline-block;
+  // space them out if they're next to each other
+  &:not(:last-child) {
+    margin-bottom: 0;
+    margin-right: $h;
+  }
+}

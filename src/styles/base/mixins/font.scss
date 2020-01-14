@@ -1,0 +1,14 @@
+// ============
+// $FONT
+// font-size, [line-height], [margin-top], [margin-bottom]
+// ============
+
+// USAGE:
+// @include font(18px, 22px, 8px, 8px);
+
+@mixin font($font-size: $base-font-size, $line-height: null, $margin-top: null, $margin-bottom: null) {
+  font-size: $font-size / $base-font-size * 1rem;  // 1
+  @if $line-height != null { line-height: $line-height / $font-size; }
+  @if $margin-top != null { margin-top: $margin-top / $base-font-size * 1rem; }
+  @if $margin-bottom != null { margin-bottom: $margin-bottom / $base-font-size * 1rem; }
+}

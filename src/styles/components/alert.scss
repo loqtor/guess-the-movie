@@ -1,0 +1,39 @@
+// ============
+// $ALERT
+// ============
+$alert-colors: (
+  error:   $error,
+  warning: $warning,
+  info:    $info,
+  success: $success
+);
+
+.Alert {
+  @extend %font-medium !optional;
+  border-radius: 5px;
+  border-style: solid;
+  border-width: 1px;
+  padding: $v / 2 $h / 2;
+  display: flex;
+  align-items: center;
+
+
+  .hint {
+    font-family: monospace;
+    letter-spacing: 0.5px;
+    margin-left: $h / 2;
+  }
+}
+
+.Alert-icon {
+  margin-right: $h / 2;
+}
+
+@each $type, $color in $alert-colors {
+  .Alert--#{$type} {
+    border-color: darken(hsl(hue($color), saturation($color), 90%), 5%);
+    background-color: hsl(hue($color), saturation($color), 90%);
+    color: $color;
+    box-shadow: 0 1px 10px -2px transparentize($color, 0.2);
+  }
+}

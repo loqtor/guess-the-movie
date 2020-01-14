@@ -47,11 +47,11 @@ interface StateProps {
   questionnaire: Question[];
   isLoadingMovies: boolean;
 }
-     
+
 interface DispatchProps {
   getMovies: () => void;
 }
- 
+
 type Props = StateProps & DispatchProps & OwnProps;
 
 interface AnnyangOptions {
@@ -81,7 +81,7 @@ const BASE_STATE = {
   currentQuestionIndex: 0,
   results: {},
   shouldShowHint: false,
-  shouldShowOptions: false,
+  shouldShowOptions: false
 }
 
 const INITIAL_STATE = {
@@ -110,6 +110,7 @@ const ENABLE_GUESSING_COMMAND = 'yo';
 
 class GameComponent extends React.Component<Props, OwnStateProps> {
   fuzzy: any;
+  timeLeft: number = GAME_TIME;
 
   constructor(props: Props) {
     super(props);
@@ -145,7 +146,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       },
       CURSE: {
         phrases: ['fuck', 'shit', 'motherfucker'],
-        callback: this.handleCurse, 
+        callback: this.handleCurse,
       },
     };
     
@@ -280,7 +281,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
   handleStart = () => {
     /**
      * Since we attempt to restart annyang when it might be no longer listening
-     * (because of SR things) `onStart` event could be triggered again and make the 
+     * (because of SR things) `onStart` event could be triggered again and make the
      * countdown appear halfway through the game.
      * This is to avoid that problem, if the user is already playing, then this event
      * does nothing.
@@ -464,10 +465,11 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     }
 
     return (
-      <>
-        <h2 className="text-centered">Guess the movie!</h2>
-        <Notification>{message}</Notification>
-      </>
+      <div className="Container u-textCenter">
+        <h1 className="h3 u-mT-lg u-textCenter">Guess the Movie!</h1>
+        <hr />
+        <Notification classes="u-mT-lg">{message}</Notification>
+      </div>
     );
   }
 
@@ -480,6 +482,10 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
         action: 'Game started',
       });
     });
+  }
+
+  updateTimeLeft = (timeLeft: number) => {
+    this.timeLeft = timeLeft;
   }
 
   finishGame = () => {
@@ -590,7 +596,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
 
   componentDidMount() {
     const { status } = this.state;
-    
+
     /**
      * No need to fetch movies in this case.
      */
@@ -612,30 +618,32 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
 
     if (status === GameStatus.AUTHORIZING) {
       return (
-        <>
-          <h2 className="text-centered">Guess the movie!</h2>
+        <div className="Container u-textCenter">
+          <h1 className="h3 u-mT-lg u-textCenter">Guess the Movie!</h1>
+          <hr />
           <Notification>
-            <h2>This game uses Speech Recognition for playing.</h2>
+            <h4 className="u-mT-lg">This game uses Speech Recognition for playing.</h4>
             <p>Please allow the microphone to be used on this page to start the game.</p>
           </Notification>
-        </>
+        </div>
       );
     }
 
     if (status === GameStatus.STARTING) {
       return (
-        <>
-          <h2 className="text-centered">Guess the movie!</h2>
+        <div className="Container u-textCenter">
+          <h1 className="h3 u-mT-lg u-textCenter">Guess the Movie!</h1>
+          <hr />
           <Notification>
-            <h2>Get Ready!</h2>
+            <h4 className="u-mT-lg">Get Ready!</h4>
             <Timer
               time={COUNTDOWN_TIME}
               onTimeUp={this.startGame}
               unformatted={true}
-              classes="text-centered"
+              classes="h1 u-mB-0 u-textSuccess"
               />
           </Notification>
-        </>
+        </div>
       )
     }
 
@@ -655,7 +663,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       return (
         <Notification>
           <p>Sorry, the <a href="https://developers.themoviedb.org/4/getting-started/authorization" target="blank">Moviedatabase API</a> seems to not be working currently</p>
-          <p> Please try again later.</p>
+          <p>Please try again later.</p>
         </Notification>
       );
     }
@@ -687,46 +695,50 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
 
     if (status === GameStatus.FINISHED) {
       return (
-        <>
-          <h2 className="text-centered">Guess the movie!</h2>
+        <div className="Container">
+          <h1 className="h3 u-mT-lg u-textCenter">Guess the Movie!</h1>
+          <hr />
           <Feedback
-            imagePosition={photoCropperProps.imagePosition}
             questionnaire={questionnaire}
             currentQuestionIndex={currentQuestionIndex}
             results={results}
           />
-          <button className="pure-button" onClick={this.reset}>Try again!</button>
-        </>
+          <button className="Button Button--primary u-textCenter" onClick={this.reset}>Try again!</button>
+        </div>
       );
     }
 
     return (
-      <>
-        <h2 className="text-centered">Guess the movie!</h2>
-        <div className="pure-g">
-          <div className="pure-u-1-3">
-            <div className="pure-g">
-              <div className="pure-u-3-4">
-                <div className="container">
-                  <p className="text-right">Time</p>
-                  <p className="text-right">Question</p>
-                </div>
-              </div>
-              <div className="pure-u-1-4">
-                <div className="container">
-                  <Timer
-                    time={GAME_TIME}
-                    onTimeUp={this.finishGame}
-                    timeRunningOutClassesThreshold={5}
-                    timeRunningOutClasses='text-red text-bold'
-                  />
-                  {currentQuestionIndex + 1}/{questionnaire.length}
-                </div>
-              </div>
-              
-            </div>
+      <div className="Container">
+        <h1 className="h3 u-mT-lg u-textCenter">Guess the Movie!</h1>
+        <hr />
+        <div className="Grid u-mT-md u-mB-md">
+          <div className="Grid-cell u-width1of2 u-textCenter">
+            <h4 className="u-textBold u-mB-sm">
+              <span className="icon icon-time"></span>
+              <span className="u-hiddenVisually">Time</span>
+            </h4>
+            <Timer
+              classes="h5 u-mB-0"
+              time={GAME_TIME}
+              onTimeUp={this.finishGame}
+              timeRunningOutClassesThreshold={10}
+              timeRunningOutClasses='u-textError u-textFlash u-textBold'
+            />
           </div>
-          <div className="pure-u-1-3">
+          <div className="Grid-cell u-width1of2 u-textCenter">
+            <h4 className="u-textBold u-mB-sm">
+              <span className="icon icon-question"></span>
+              <span className="u-hiddenVisually">Question</span>
+            </h4>
+            <p className="h5 u-mB-0">{currentQuestionIndex + 1}/{questionnaire.length}</p>
+          </div>
+        </div>
+
+        <hr />
+
+        <div className="Grid u-mT-md u-mB-md u-flex u-flexAlignItemsStretch">
+          <div className="Grid-cell u-md-width2of3">
             <Gallery
               currentSlide={currentQuestionIndex}
             >
@@ -740,50 +752,54 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
                 ))
               )}
             </Gallery>
-            {status === GameStatus.GUESSING ? (
-              <h3>Take a guess now!</h3>
-            ) : 
-              <h3>Say "{ENABLE_GUESSING_COMMAND}" when you are ready to take a guess</h3>}
-            {shouldShowHint && (
-              <>
-                <h3>So close! See the hint for the full title!</h3>
-                <h3>{hint}</h3>
-              </>
-            )}
-            {!shouldShowHint && <h3>If you need help, just say "show options"</h3>}
-            {shouldShowOptions && (
-              <AnswerList
-                answers={currentQuestion.answers}
-                onSelect={this.onSelect}
-              />
-            )}
           </div>
-          <div className="pure-u-1-3">
+          <div className="Grid-cell u-md-width1of3">
             <Feedback
-              imagePosition={photoCropperProps.imagePosition}
               questionnaire={questionnaire}
               currentQuestionIndex={currentQuestionIndex}
               results={results}
             />
           </div>
         </div>
-      </>
+
+        <hr className="u-mT-md u-mB-md" />
+
+        {status === GameStatus.GUESSING && (<h4 className="u-textCenter">Take a guess now!</h4>)}
+        {status !== GameStatus.GUESSING && (<h4 className="u-textCenter">Say "{ENABLE_GUESSING_COMMAND}" when you are ready to take a guess.</h4>)}
+        {!shouldShowHint && <h4 className="u-textCenter">If you need help, just say "show options"</h4>}
+
+        {shouldShowHint && (
+          <div className="Alert Alert--info">
+            <h5 className="u-mB-0 Alert-icon">
+              <span className="icon icon-hint"></span>
+            </h5>
+            <p className="u-mB-0"><strong>Hint: </strong><span className="hint">{hint}</span></p>
+          </div>
+        )}
+
+        {shouldShowOptions && (
+          <AnswerList
+            answers={currentQuestion.answers}
+            onSelect={this.onSelect}
+          />
+        )}
+      </div>
     )
   }
 }
- 
+
 function mapStateToProps(state: RootState): StateProps {
   return {
     questionnaire: getQuestionnaire(state),
     isLoadingMovies: isLoadingMovies(state),
   };
 }
- 
+
 function mapDispatchToProps(dispatch: Dispatch<any>): DispatchProps {
   return {
     getMovies: () => dispatch(getMoviesAction()),
   };
 }
-  
+
 export const Game = connect<StateProps, any, Props, any>
   (mapStateToProps, mapDispatchToProps)(GameComponent)

@@ -1,0 +1,25 @@
+// ============
+// ICON
+// ============
+
+// Used in conjunction with icomoon font: /elements/icons.scss
+// Use this in order to avoid @extending .icon- classes in the css, and all the volumnous inheritance that creates
+
+// NOTE
+// 1. @include declaration sits outside :before
+
+// USAGE
+// .element{
+//   @include icon('affordance'); // 1
+//   &:before {
+//     ...
+//   }
+// }
+
+@mixin icon($name) {
+  @extend .icon-#{$name};
+
+  &::before {
+    @extend %icon;
+  }
+}

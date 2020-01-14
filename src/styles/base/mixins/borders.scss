@@ -1,0 +1,18 @@
+// ============
+// $BORDER
+// ============
+
+
+// Border radius ============
+@mixin border-radius($radius) {
+  border-radius: $radius;
+  background-clip: padding-box; // stops bg color from leaking outside the border
+}
+
+
+// Border ============
+@mixin border($width: 1px, $style: solid, $color: $black-10, $radius: null) {
+  @if ($radius != null) { @include border-radius($radius); }
+  border: $width $style $color;
+  background-clip: padding-box; // stops bg color from leaking outside the border
+}

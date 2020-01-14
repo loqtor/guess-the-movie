@@ -1,0 +1,97 @@
+// ============
+// $GRID
+// ============
+// DO NOT apply dimension or offset utilities to the `Grid` element. All cell
+// widths and offsets should be applied to child grid cells.
+
+
+// ============
+// Grid container
+// ============
+// All content must be contained within child `Grid-cell` elements.
+// 1. Account for browser defaults of elements that might be the root node of the component.
+// 2. Remove inter-cell whitespace that appears between `inline-block` child elements.
+// 3. Ensure consistent default alignment.
+.Grid {
+  display: block;   // 1.
+  font-size: 0;     // 2.
+  margin: 0;        // 1.
+  padding: 0;       // 1.
+  text-align: left; // 3.
+}
+
+
+// ============
+// Grid cell
+// ============
+// No explicit width by default. Rely on combining `Grid-cell` with a dimension
+// utility or a component class that extends 'grid'.
+// 1. Fundamentals of the non-float grid layout.
+// 2. Reset font size change made in `Grid`.
+// 3. Keeps content correctly aligned with the grid direction.
+// 4. Controls vertical positioning of units.
+// 5. Make cells full-width by default.
+.Grid-cell {
+  display: inline-block;      // 1.
+  font-size: $base-font-size; // 2.
+  margin: 0;
+  padding: 0;
+  text-align: left;           // 3.
+  vertical-align: top;        // 4.
+  width: 100%;                // 5.
+}
+
+
+// ============
+// Modifiers
+// ============
+
+// === Horizontally center one unit
+// Set a specific unit to be horizontally centered. Doesn't affect
+// any other units. Can still contain a child `Grid` object.
+.Grid-cell--center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+// === Remove gutters from grid cells
+.Grid:not(.Grid--noGutter) {
+  margin-left: calc(-0.5 * #{$grid-gutter-sm});
+  margin-right: calc(-0.5 * #{$grid-gutter-sm});
+
+  @media #{$tablet} {
+    margin-left: calc(-0.5 * #{$grid-gutter-lg});
+    margin-right: calc(-0.5 * #{$grid-gutter-lg});
+  }
+
+  > .Grid-cell {
+    padding-left: calc(0.5 * #{$grid-gutter-sm});
+    padding-right: calc(0.5 * #{$grid-gutter-sm});
+
+    @media #{$tablet} {
+      padding-left: calc(0.5 * #{$grid-gutter-lg});
+      padding-right: calc(0.5 * #{$grid-gutter-lg});
+    }
+  }
+}
+
+// === Center align all grid cells
+// .Grid--alignCenter {
+//   text-align: center;
+// }
+
+// === Right align all grid cells
+// .Grid--alignRight {
+//   text-align: right;
+// }
+
+// === Middle-align grid cells
+// .Grid--alignMiddle > .Grid-cell {
+//   vertical-align: middle;
+// }
+
+// === Bottom-align grid cells
+// .Grid--alignBottom > .Grid-cell {
+//   vertical-align: bottom;
+// }

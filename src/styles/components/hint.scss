@@ -1,0 +1,367 @@
+// ============
+// $HINT (TOOLTIPS)
+// ============
+
+// HINT.css is a tooltip library made in pure CSS.
+// v2.3.2 - 2016-07-28
+// Source: https://github.com/chinchang/hint.css
+// Demo: http://kushagragour.in/lab/hint/
+// Release under The MIT License
+// Copyright (c) 2016 Kushagra Gour
+
+$hint-color-default: $grey-dark;
+$hint-arrow-size: 8px;
+$hint-border-radius: 4px;
+$hint-width-small: 80px;
+$hint-width-medium: 150px;
+$hint-width-large: 300px;
+
+// Each tooltip is made of 2 parts:
+//   1) body (::after)
+//   2) arrow (::before)
+
+[class*="Hint"] {
+  position: relative;
+  // display: inline-block; // @NOTE: may need to add this back in for some cases
+}
+
+[class*="Hint"]::before,
+[class*="Hint"]::after {
+  position: absolute;
+  transform: translate3d(0, 0, 0);
+  visibility: hidden;
+  opacity: 0;
+  z-index: 1000000;
+  pointer-events: none;
+  transition: 0.3s ease;
+  transition-delay: 0ms;
+}
+
+[class*="Hint"]::before {
+  content: '';
+  position: absolute;
+  background-color: transparent;
+  border: 6px solid transparent;
+  z-index: 1000001;
+}
+
+[class*="Hint"]::after {
+  @include font(12px, 14px);
+  @extend %font-light !optional; // @NOTE: Update this per-project
+  background-color: $hint-color-default;
+  color: $white;
+  padding: 8px 10px;
+  white-space: nowrap;
+  border-radius: $hint-border-radius;
+}
+
+[class*="Hint"]:hover::before,
+[class*="Hint"]:hover::after {
+  visibility: visible;
+  opacity: 1;
+}
+
+[class*="Hint"]:hover::before,
+[class*="Hint"]:hover::after {
+  transition-delay: 100ms;
+}
+
+[class*="Hint"][aria-label]::after { content: attr(aria-label); }
+[class*="Hint"][data-hint]::after { content: attr(data-hint); }
+
+[aria-label='']::before,
+[aria-label='']::after,
+[data-hint='']::before,
+[data-hint='']::after {
+  display: none !important;
+}
+
+
+// ============
+// Defines the positoning logic for the tooltips.
+// ============
+// Classes added:
+// 	1) Hint--top
+// 	2) Hint--bottom
+// 	3) Hint--left
+// 	4) Hint--right
+
+// set default color for tooltip arrows
+.Hint--top-left::before,
+.Hint--top-right::before,
+.Hint--top::before {
+  border-top-color: $hint-color-default;
+}
+
+.Hint--bottom-left::before,
+.Hint--bottom-right::before,
+.Hint--bottom::before {
+  border-bottom-color: $hint-color-default;
+}
+.Hint--left::before { border-left-color: $hint-color-default; }
+.Hint--right::before { border-right-color: $hint-color-default; }
+
+
+// Top tooltip ============
+.Hint--top::before {
+  margin-bottom: -11px;
+}
+
+.Hint--top::before,
+.Hint--top::after {
+  bottom: 100%;
+  left: 50%;
+}
+.Hint--top::before { left: calc(50% - 6px); }
+.Hint--top::after { transform: translateX(-50%); }
+.Hint--top:hover::before { transform: translateY(-#{$hint-arrow-size}); }
+.Hint--top:hover::after { transform: translateX(-50%) translateY(-#{$hint-arrow-size}); }
+
+
+// Bottom tooltip ============
+.Hint--bottom::before {
+  margin-top: -11px;
+}
+
+.Hint--bottom::before,
+.Hint--bottom::after {
+  top: 100%;
+  left: 50%;
+}
+.Hint--bottom::before { left: calc(50% - 6px); }
+.Hint--bottom::after { transform: translateX(-50%); }
+.Hint--bottom:hover::before { transform: translateY(#{$hint-arrow-size}); }
+.Hint--bottom:hover::after { transform: translateX(-50%) translateY(#{$hint-arrow-size}); }
+
+
+// Right tooltip ============
+.Hint--right::before {
+  margin-left: -11px;
+  margin-bottom: -6px;
+}
+
+.Hint--right::after {
+  margin-bottom: -14px;
+}
+
+.Hint--right::before,
+.Hint--right::after {
+  left: 100%;
+  bottom: 50%;
+}
+.Hint--right:hover::before { transform: translateX(#{$hint-arrow-size}); }
+.Hint--right:hover::after { transform: translateX(#{$hint-arrow-size}); }
+
+
+// Left tooltip ============
+.Hint--left::before {
+  margin-right: -11px;
+  margin-bottom: -6px;
+}
+
+.Hint--left::after {
+  margin-bottom: -14px;
+}
+
+.Hint--left::before,
+.Hint--left::after {
+  right: 100%;
+  bottom: 50%;
+}
+.Hint--left:hover::before { transform: translateX(-#{$hint-arrow-size}); }
+.Hint--left:hover::after { transform: translateX(-#{$hint-arrow-size}); }
+
+
+// Top-left tooltip ============
+.Hint--top-left::before {
+  margin-bottom: -11px;
+}
+
+.Hint--top-left::before,
+.Hint--top-left::after {
+  bottom: 100%;
+  left: 50%;
+}
+.Hint--top-left::before { left: calc(50% - 6px); }
+.Hint--top-left::after { transform: translateX(-100%); }
+.Hint--top-left::after { margin-left: 12px; }
+.Hint--top-left:hover::before { transform: translateY(-#{$hint-arrow-size}); }
+.Hint--top-left:hover::after { transform: translateX(-100%) translateY(-#{$hint-arrow-size}); }
+
+
+// Top-right tooltip ============
+.Hint--top-right::before {
+  margin-bottom: -11px;
+}
+
+.Hint--top-right::before,
+.Hint--top-right::after {
+  bottom: 100%;
+  left: 50%;
+}
+.Hint--top-right::before { left: calc(50% - 6px); }
+.Hint--top-right::after { transform: translateX(0); }
+.Hint--top-right::after { margin-left: -12px; }
+.Hint--top-right:hover::before { transform: translateY(-#{$hint-arrow-size}); }
+.Hint--top-right:hover::after { transform: translateY(-#{$hint-arrow-size}); }
+
+
+// Bottom-left tooltip ============
+.Hint--bottom-left::before {
+  margin-top: -11px;
+}
+
+.Hint--bottom-left::before,
+.Hint--bottom-left::after {
+  top: 100%;
+  left: 50%;
+}
+.Hint--bottom-left::before { left: calc(50% - 6px); }
+.Hint--bottom-left::after { transform: translateX(-100%); }
+.Hint--bottom-left::after { margin-left: 12px; }
+.Hint--bottom-left:hover::before { transform: translateY(#{$hint-arrow-size}); }
+.Hint--bottom-left:hover::after { transform: translateX(-100%) translateY(#{$hint-arrow-size}); }
+
+
+// Bottom-right tooltip ============
+.Hint--bottom-right::before {
+  margin-top: -11px;
+}
+
+.Hint--bottom-right::before,
+.Hint--bottom-right::after {
+  top: 100%;
+  left: 50%;
+}
+.Hint--bottom-right::before { left: calc(50% - 6px); }
+.Hint--bottom-right::after { transform: translateX(0); }
+.Hint--bottom-right::after { margin-left: -12px; }
+.Hint--bottom-right:hover::before { transform: translateY(#{$hint-arrow-size}); }
+.Hint--bottom-right:hover::after { transform: translateY(#{$hint-arrow-size}); }
+
+
+// ============
+// Defines width restricted tooltips that can span across multiple lines.
+// ============
+// Classes added:
+// 	1) Hint--small
+// 	2) Hint--medium
+// 	3) Hint--large
+
+.Hint--small::after,
+.Hint--medium::after,
+.Hint--large::after {
+  white-space: normal;
+  line-height: 1.4em;
+  word-wrap: break-word;
+}
+.Hint--small::after { width: $hint-width-small; }
+.Hint--medium::after { width: $hint-width-medium; }
+.Hint--large::after { width: $hint-width-large; }
+
+
+// Defines basic theme for tooltips.
+[class*="Hint--"]::after {
+  box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+
+// ============
+// Contains tooltips of various types based on color differences.
+// ============
+// Classes added:
+//   1) Hint--error
+//   2) Hint--warning
+//   3) Hint--info
+//   4) Hint--success
+
+$hint-colours: (
+  error: $error,
+  info: $info,
+  success: $success,
+  warning: $warning
+);
+
+@mixin colour-hint($style) {
+  $colour: map-get($hint-colours, $style);
+
+  .Hint--#{$style} {
+    &::after { background-color: $colour; }
+
+    &.Hint--top-left::before,
+    &.Hint--top-right::before,
+    &.Hint--top::before { border-top-color: $colour; }
+
+    &.Hint--bottom-left::before,
+    &.Hint--bottom-right::before,
+    &.Hint--bottom::before { border-bottom-color: $colour; }
+    &.Hint--left::before { border-left-color: $colour; }
+    &.Hint--right::before { border-right-color: $colour; }
+  }
+}
+
+@include colour-hint(error);
+@include colour-hint(info);
+@include colour-hint(success);
+@include colour-hint(warning);
+
+
+// ============
+// Defines a persisted tooltip which shows always.
+// ============
+// Classes added:
+// 	1) Hint--always
+
+.Hint--always::after,
+.Hint--always::before {
+  opacity: 1;
+  visibility: visible;
+}
+.Hint--always.Hint--top::before { transform: translateY(-#{$hint-arrow-size}); }
+.Hint--always.Hint--top::after { transform: translateX(-50%) translateY(-#{$hint-arrow-size}); }
+.Hint--always.Hint--top-left::before { transform: translateY(-#{$hint-arrow-size}); }
+.Hint--always.Hint--top-left::after { transform: translateX(-100%) translateY(-#{$hint-arrow-size}); }
+.Hint--always.Hint--top-right::before { transform: translateY(-#{$hint-arrow-size}); }
+.Hint--always.Hint--top-right::after { transform: translateY(-#{$hint-arrow-size}); }
+.Hint--always.Hint--bottom::before { transform: translateY(#{$hint-arrow-size}); }
+.Hint--always.Hint--bottom::after { transform: translateX(-50%) translateY(#{$hint-arrow-size}); }
+.Hint--always.Hint--bottom-left::before { transform: translateY(#{$hint-arrow-size}); }
+.Hint--always.Hint--bottom-left::after { transform: translateX(-100%) translateY(#{$hint-arrow-size}); }
+.Hint--always.Hint--bottom-right::before { transform: translateY(#{$hint-arrow-size}); }
+.Hint--always.Hint--bottom-right::after { transform: translateY(#{$hint-arrow-size}); }
+.Hint--always.Hint--left::before { transform: translateX(-#{$hint-arrow-size}); }
+.Hint--always.Hint--left::after { transform: translateX(-#{$hint-arrow-size}); }
+.Hint--always.Hint--right::before { transform: translateX(#{$hint-arrow-size}); }
+.Hint--always.Hint--right::after { transform: translateX(#{$hint-arrow-size}); }
+
+
+// ============
+// Defines rounded corner tooltips.
+// ============
+// Classes added:
+// 	1) Hint--rounded
+//
+// .Hint--rounded::after {
+//   border-radius: $hint-border-radius;
+// }
+
+
+// ============
+// Defines various transition effects for the tooltips.
+// ============
+// Classes added:
+// 	1) Hint--no-animate
+// 	2) Hint--bounce
+
+.Hint--no-animate::before,
+.Hint--no-animate::after {
+  transition-duration: 0ms;
+}
+
+.Hint--bounce::before,
+.Hint--bounce::after {
+  transition:
+    opacity 0.3s ease,
+    visibility 0.3s ease,
+    transform 0.3s cubic-bezier(0.71, 1.7, 0.77, 1.24);
+}

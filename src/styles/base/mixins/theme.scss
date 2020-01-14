@@ -1,0 +1,36 @@
+// ============
+// $THEME
+// ============
+
+// Usage:
+// .Tile {
+//   @include theme(color, border-color);
+// }
+// Output:
+// .theme1 .Tile { color: #003E77; border-color: #003E77; }
+// .theme2 .Tile { color: #6FC03E; border-color: #6FC03E; }
+// .theme3 .Tile { color: #0094D1; border-color: #0094D1; }
+// .theme4 .Tile { color: #7F80C2; border-color: #7F80C2; }
+// .theme5 .Tile { color: #F10331; border-color: #F10331; }
+
+// @TODO Replace this technique with one using CSS variables
+
+$palette: (
+  $primary,
+  $secondary,
+  $tertiary,
+  $primary-light,
+  $secondary-light
+);
+
+@mixin theme($args...) {
+  $i: length($palette);
+  @while $i > 0 {
+    .theme#{$i} & {
+      @each $arg in $args {
+        #{nth($arg, 1)}: nth($palette, $i);
+      }
+    }
+    $i: $i - 1;
+  }
+}

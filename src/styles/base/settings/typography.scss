@@ -1,0 +1,192 @@
+// =====================
+// TYPOGRAPHY SETTINGS
+// =====================
+
+
+// ==========================================
+// STEP 1: Include the font using @font-face
+// ==========================================
+// Only woff is required when using webfonts: http://caniuse.com/#search=woff
+// The following is example setup only:
+// ==========================================
+
+// @font-face {
+//   font-family: "Gilroy Extra Bold";
+//   font-weight: normal;
+//   font-style: normal;
+//   src: local("Gilroy ExtraBold"),
+//        local("Gilroy-ExtraBold"),
+//        url("/assets/fonts/gilroy/Gilroy-ExtraBold.woff") format("woff");
+// }
+$gilroy-extra-bold: "Gilroy Extra Bold", system-ui, sans-serif;
+
+// @font-face {
+//   font-family: "Gilroy Light";
+//   font-weight: normal;
+//   font-style: normal;
+//   src: local("Gilroy Light"),
+//        local("Gilroy-Light"),
+//        url("/assets/fonts/gilroy/Gilroy-Light.woff") format("woff");
+// }
+$gilroy-light: "Gilroy Light", system-ui, sans-serif;
+
+
+// ==========================================
+// STEP 2: Setup variables and placeholders
+// ==========================================
+// The following is example setup only, however,
+// I do not recommend changing base-font-size
+// ==========================================
+$base-font-size:    16px;
+$base-line-height:  1.5;
+// Fluid type settings
+$min-breakpoint:    320px;
+$max-breakpoint:    768px;
+
+
+/// Base font styles
+/// ============
+/// @type Map
+/// ============
+/// @prop {String} font-family - font stack
+/// @prop {String} font-style - string e.g. italic, bold, normal
+/// @prop {String | Number} font-weight - string or number
+
+$base-font-styles: (
+  light: (
+    font-family: #{$gilroy-light},
+    font-style: normal,
+    font-weight: lighter
+  ),
+  medium: (
+    font-family: #{$gilroy-extra-bold},
+    font-style: normal,
+    font-weight: normal
+  ),
+  bold: (
+    font-family: #{$gilroy-extra-bold},
+    font-style: normal,
+    font-weight: bold
+  )
+);
+
+
+/// Base font dimensions
+/// ============
+/// @type Map
+/// ============
+/// @prop {Measurement} font-size - pixel measurement
+/// @prop {Number?} line-height - optional line hight measurement (font-size * line-height)
+/// @prop {Measurement?} margin-top - optional pixel measurement
+/// @prop {Measurement?} margin-bottom - optional pixel measurement
+/// @prop {String?} font-family - optional, name MUST match one of the names supplied in $base-font-styles, e.g. light, medium, bold.
+/// @prop {Boolean?} uppercase - do you want capital letters
+/// @prop {Measurement?} letter-spacing - do you want letter spacing
+///
+/// @NOTE: The following are required when you want multi breakpoint type:
+/// @prop {Measurement?} min-size - what is the minimum font size
+/// @prop {Measurement?} max-size - what is the maximum font size
+///
+/// @NOTE: The following are required when you want the type to be fluid:
+/// @prop {Measurement?} min-breakpoint - when does the font start growing
+/// @prop {Measurement?} max-breakpoint - when does the font finish growing
+
+$base-font-dimensions: (
+  h1: (
+    min-size: 32px,
+    max-size: 72px,
+    min-breakpoint: $min-breakpoint,
+    max-breakpoint: $max-breakpoint,
+    line-height: 1,
+    letter-spacing: 1px,
+    margin-top: 0px,
+    margin-bottom: 24px,
+    font-family: bold
+  ),
+  h2: (
+    min-size: 28px,
+    max-size: 54px,
+    min-breakpoint: $min-breakpoint,
+    max-breakpoint: $max-breakpoint,
+    line-height: 1.1,
+    letter-spacing: 1px,
+    margin-top: 0px,
+    margin-bottom: 24px,
+    font-family: bold
+  ),
+  h3: (
+    min-size: 24px,
+    max-size: 42px,
+    min-breakpoint: $min-breakpoint,
+    max-breakpoint: $max-breakpoint,
+    line-height: 1.1,
+    letter-spacing: 1px,
+    margin-top: 0px,
+    margin-bottom: 24px,
+    font-family: bold
+  ),
+  h4: (
+    min-size: 20px,
+    max-size: 26px,
+    min-breakpoint: $min-breakpoint,
+    max-breakpoint: $max-breakpoint,
+    line-height: 1.1,
+    letter-spacing: 1.2px,
+    margin-top: 0px,
+    margin-bottom: 24px,
+    font-family: medium
+  ),
+  h5: (
+    min-size: 16px,
+    max-size: 24px,
+    min-breakpoint: $min-breakpoint,
+    max-breakpoint: $max-breakpoint,
+    line-height: 1.1,
+    margin-top: 0px,
+    margin-bottom: 24px,
+    font-family: medium
+  ),
+  h6: (
+    uppercase: true,
+    min-size: 14px,
+    max-size: 18px,
+    min-breakpoint: $min-breakpoint,
+    max-breakpoint: $max-breakpoint,
+    line-height: 1.5,
+    letter-spacing: 1px,
+    margin-top: 0px,
+    margin-bottom: 24px,
+    font-family: bold
+  ),
+  p: (
+    min-size: 16px,
+    max-size: 20px,
+    min-breakpoint: $min-breakpoint,
+    max-breakpoint: $max-breakpoint,
+    line-height: 1.5,
+    margin-top: 0px,
+    margin-bottom: 24px,
+    font-family: medium
+  ),
+  lead: (
+    font-size: 40px,
+    line-height: 1,
+    margin-top: 0px,
+    margin-bottom: 24px,
+    font-family: light
+  ),
+  small: (
+    font-size: 14px,
+    line-height: 1.5,
+    margin-top: 0px,
+    margin-bottom: 21px,
+    font-family: medium
+  ),
+  fineprint: (
+    font-size: 12px,
+    line-height: 1.3,
+    margin-top: 0px,
+    margin-bottom: 18px,
+    font-family: medium
+  )
+);

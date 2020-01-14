@@ -7,6 +7,7 @@ interface IProps {
   timeRunningOutClasses?: string;
   timeRunningOutClassesThreshold?: number;
   unformatted?: boolean;
+  onTick?: (timeLeft: number) => void;
   onTimeUp: () => void;
 }
 
@@ -38,6 +39,13 @@ export const Timer = class Timer extends Component<IProps, IState> {
       this.timeout = window.setTimeout(() => {
         if (timeLeft > 1) {
           this.tickTimer();
+          
+          const { onTick } = this.props;
+          const { timeLeft } = this.state;
+
+          if (onTick) {
+            onTick(timeLeft);
+          }
         } else {
           const { onTimeUp } = this.props;
 

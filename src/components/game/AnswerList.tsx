@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import classnames from 'classnames';
 
 export interface Answer {
   id: number | string;
@@ -17,15 +16,11 @@ export const AnswerList = (props: Props) => {
   const [ selectedAnswer, selectAnswer ] = useState(-1);
 
   return (
-    <ul className="pure-menu-list">
+    <ul className="AnswerList">
       {answers.map((answer: Answer, index: number) => {
-        const answerClassname = classnames('Answer pure-menu-item margin-bottom', {
-          'Answer--correct': selectedAnswer === index && answer.isCorrect,
-        });
-
         return (
-          <li key={answer.id} className={answerClassname}>
-            <button className="pure-button" onClick={() => {
+          <li key={answer.id} className="AnswerList-item">
+            <button className="Button Button--secondary" onClick={() => {
               selectAnswer(index);
               onSelect(answer);
             }}>

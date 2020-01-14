@@ -1,0 +1,84 @@
+// ============
+// $RADIO
+// ============
+
+// Usage:
+// <label class="Radio" for="male">
+//   <input class="Radio-input" type="radio" name="gender" id="male">
+//   <span class="Radio-label">Male</span>
+// </label>
+// <label class="Radio" for="female">
+//   <input class="Radio-input" type="radio" name="gender" id="female">
+//   <span class="Radio-label">Female</span>
+// </label>
+
+$radio-size: 16px;
+
+// <label>
+.Radio {
+  display: block;
+  user-select: none;
+  // space them out if they're next to each other
+  &:not(:last-child) {
+    margin-bottom: $h / 2;
+  }
+}
+
+// <span> acting as the label
+.Radio-label {
+  position: relative;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  padding: $form-element-border-width;
+}
+
+// say goodbye to the real input
+.Radio-input {
+  z-index: $z-0;
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  position: absolute;
+}
+
+// say hello to the fake input
+.Radio-label::before {
+  display: block;
+  content: '';
+  width: $radio-size;
+  height: $radio-size;
+  border: 3px solid $white;
+  box-shadow: 0 0 0 1px $form-element-disabled-color;
+  border-radius: 50%;
+  background: none;
+  margin-right: $h / 2;
+}
+
+
+// ============
+// STATES
+// ============
+.Radio-input:focus + .Radio-label::before {
+  box-shadow: 0 0 0 $form-element-border-width $form-element-focus-color;
+}
+
+.Radio-input:checked + .Radio-label::before,
+.Radio-input.is-checked + .Radio-label::before {
+  background: $form-element-focus-color;
+  box-shadow: 0 0 0 $form-element-border-width $form-element-focus-color;
+}
+
+
+// ============
+// MODIFIERS
+// ============
+.Radio--inline {
+  display: inline-block;
+  // space them out if they're next to each other
+  &:not(:last-child) {
+    margin-bottom: 0;
+    margin-right: $h;
+  }
+}

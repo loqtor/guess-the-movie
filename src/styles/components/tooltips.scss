@@ -1,0 +1,123 @@
+// ============
+// $TOOLTIPS
+// ============
+
+// NOTE: custom tooltips only for charts.js
+
+// Usage:
+// <div class="Tooltip Tooltip--star {{item.className}}">
+//   <div class="Tooltip-body">
+//     <p class="Tooltip-label">{{item.title}}</p>
+//     <p class="Tooltip-data">
+//       {{rating/star-rating-display
+//         rating=item.value
+//       }}
+//     </p>
+//   </div>
+//   <span class="Tooltip-nib"></span>
+// </div>
+
+.ChartWrapper {
+  position: relative;
+  user-select: none;
+}
+
+$tooltip-color: $white;
+$tooltip-caret-size: 16px;
+
+.Tooltip {
+  position: absolute;
+  padding: 10px 16px;
+  height: 56px;
+  background: $tooltip-color;
+  border-radius: 1px;
+  border: 1px solid $border;
+  box-shadow: 0 2px 4px 0 transparentize($grey-med, 0.5);
+
+  .Tooltip-body {
+    padding: 10px 16px;
+    margin: -10px -16px;
+    border-radius: 1px;
+    background: $tooltip-color;
+    position: relative;
+    z-index: 10;
+  }
+
+  // ============
+  // TOOLTIP CARET
+  // ============
+  .Tooltip-nib {
+    z-index: 5;
+    display: block;
+    position: absolute;
+    height: 0;
+    width: 0;
+    border: ($tooltip-caret-size / 2) solid transparent;
+    transform: translate(-($tooltip-caret-size / 2), 0);
+  }
+
+  // LEFT and RIGHT GENERAL ============
+  &.left-center .Tooltip-nib {
+    left: 0;
+    top: 50%;
+    transform: translate(-($tooltip-caret-size), -($tooltip-caret-size / 2));
+    border-right-color: $tooltip-color;
+  }
+
+  &.right-center .Tooltip-nib {
+    left: 100%;
+    top: 50%;
+    transform: translate(0, -($tooltip-caret-size / 2));
+    border-left-color: $tooltip-color;
+  }
+
+  // TOP and BOTTOM GENERAL ============
+  &[class*="top-"] .Tooltip-nib {
+    top: -$tooltip-caret-size;
+    border-bottom-color: $tooltip-color;
+  }
+
+  &[class*="bottom-"] .Tooltip-nib {
+    top: 100%;
+    border-top-color: $tooltip-color;
+  }
+
+  // TOP and BOTTOM CENTER ============
+  &.top-center .Tooltip-nib,
+  &.bottom-center .Tooltip-nib {
+    left: 50%;
+  }
+
+  // TOP and BOTTOM LEFT ============
+  &.top-left .Tooltip-nib,
+  &.bottom-left .Tooltip-nib {
+    left: 0;
+    transform: none;
+  }
+
+  // TOP and BOTTOM RIGHT ============
+  &.top-right .Tooltip-nib,
+  &.bottom-right .Tooltip-nib {
+    left: calc(100% - #{$tooltip-caret-size});
+    transform: none;
+  }
+}
+
+.Tooltip-label,
+.Tooltip-data {
+  user-select: none;
+}
+
+.Tooltip-label {
+  @extend %font-heading !optional;
+  @include font(14px,18px);
+  height: 18px;
+  margin: 0;
+  color: $violet;
+}
+
+.Tooltip-data {
+  @include font(16px,16px);
+  height: 16px;
+  margin: 0;
+}

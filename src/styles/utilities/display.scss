@@ -1,0 +1,36 @@
+// ============
+// $DISPLAY
+// ============
+
+
+// Display mixin ============
+// NOTE: refer to see flex.scss for display: flex classes
+@mixin display($namespace: "") {
+  .u-#{$namespace}hidden { display: none !important; }
+  .u-#{$namespace}inlineBlock { display: inline-block !important; }
+  .u-#{$namespace}block { display: block !important; }
+}
+@include display();
+@media #{$mobile-only} { @include display("sm-"); }
+@media #{$tablet} { @include display("md-"); }
+// @media #{$laptop} { @include display("lg-"); }
+// @media #{$desktop} { @include display("xl-"); }
+// @media #{$widescreen} { @include display("xx-"); }
+
+
+// Display table ============
+// .u-table { display: table !important; }
+// .u-tableCell { display: table-cell !important; }
+// .u-tableRow { display: table-row !important; }
+
+
+// Remove from flow, but available to screen readers ============
+.u-hiddenVisually {
+  border: 0 !important;
+  clip: rect(1px, 1px, 1px, 1px) !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  position: absolute !important;
+  width: 1px !important;
+}

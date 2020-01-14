@@ -1,0 +1,30 @@
+// ==========================================
+// Math functions
+// ==========================================
+$pi: 3.1415926535897932384626433832795028841971693993751;
+$π: $pi;
+
+// ==========================================
+// Degree/Radian Conversion
+// ==========================================
+@function deg-to-rad($number) {
+  @return $number * $pi / 180deg;
+}
+
+@function rad-to-deg($number) {
+  @return $number * 180deg / $pi;
+}
+
+
+// ==========================================
+// Calculates the height as a percentage
+// of the width for a given ratio.
+// ==========================================
+// usage: ratio-to-percentage(16 by 9)
+// output: 56.25%
+// ==========================================
+@function ratio-to-percentage($ratio) {
+  $w: nth($ratio, 1);
+  $h: nth($ratio, 3);
+  @return $h / $w * 100%;
+}

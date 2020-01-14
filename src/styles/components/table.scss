@@ -1,0 +1,67 @@
+// ============
+// $TABLE
+// ============
+
+.Table {
+  width: 100%;
+  border-collapse: collapse;
+
+  &, th, td {
+    border: 0 solid $border; // turn off browser default border widths and initialise our default style and colour
+  }
+
+  th {
+    @include font(14px);
+    padding: ($v / 2) $h;
+    text-align: left;
+    background-color: $off-white;
+    &:not(:first-child) { border-left-width: 1px; }
+    &:empty::before { content: '\00a0'; }
+  }
+
+  td {
+    padding: ($v / 2) $h;
+    border-top-width: 1px;
+    &:not(:first-child) { border-left-width: 1px; }
+  }
+}
+
+
+// ============
+// $Modifiers
+// ============
+
+// Cell widths ============
+// .td--5  { width: 5%; }
+.td--10 { width: 10%; }
+// .td--15 { width: 15%; }
+.td--20 { width: 20%; }
+.td--25 { width: 25%; }
+// .td--30 { width: 30%; }
+// .td--35 { width: 35%; }
+// .td--40 { width: 40%; }
+// .td--45 { width: 45%; }
+.td--50 { width: 50%; }
+// .td--55 { width: 55%; }
+// .td--60 { width: 60%; }
+// .td--65 { width: 65%; }
+// .td--70 { width: 70%; }
+// .td--75 { width: 75%; }
+// .td--80 { width: 80%; }
+// .td--85 { width: 85%; }
+// .td--90 { width: 90%; }
+// .td--95 { width: 95%; }
+
+// Responsive table ============
+.Table--scroll {
+  display: block;
+  overflow-x: scroll;
+  max-width: 100%;
+}
+
+// Non-collapsing mobile tables ============
+.Table--nowrap-mobile {
+  @media #{$mobile-only} {
+    white-space: nowrap;
+  }
+}

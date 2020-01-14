@@ -2,8 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 export const Home = () => (
-  <>
-    <h1>Welcome to the boilerplate!</h1>
-    <Link to="game">Go to the game!</Link>
-  </>
+  <div className="Container u-textCenter">
+    <h1 className="h3 u-mT-lg">Welcome to Guess the Movie!</h1>
+    <Link className="Button Button--primary" to="game">Launch the game</Link>
+  </div>
 );

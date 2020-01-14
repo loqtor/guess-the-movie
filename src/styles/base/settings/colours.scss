@@ -1,0 +1,44 @@
+// ============
+// Colours
+// ============
+
+// Brand ============
+// $violet:    #9F4585;
+// $red:       #e41b13;
+$blue:      #4D6DFF;
+$green:     #6CB32D;
+$orange:    #FF8B66;
+$yellow:    #FFD24D;
+
+// Name-spacing ============
+$primary:         $blue;
+$primary-light:   hsl(hue($primary), saturation($primary), 75%);
+$primary-dark:    hsl(hue($primary), saturation($primary), 25%);
+$secondary:       $green;
+$secondary-light: hsl(hue($secondary), saturation($secondary), 75%);
+$secondary-dark:  hsl(hue($secondary), saturation($secondary), 25%);
+$tertiary:        $yellow;
+$tertiary-light:  hsl(hue($tertiary), saturation($tertiary), 75%);
+$tertiary-dark:   hsl(hue($tertiary), saturation($tertiary), 25%);
+
+// Tones ============
+$black:      #000;
+$grey-dark:  #4a4a4a;
+$grey-med:   #adadad;
+$grey-light: #cecece;
+$border:     #ececec;
+$off-white:  #fafafa;
+$white:      #fff;
+
+// Text ============
+$text:        $grey-dark;
+$text-light:  $grey-med;
+$link:        $blue;
+$active:      $blue;
+$highlight:   $active;
+
+// Messages ============
+$error:   $orange;
+$info:    $blue;
+$success: $green;
+$warning: $yellow;

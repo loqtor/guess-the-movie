@@ -1,0 +1,57 @@
+// ============
+// $MEDIA OBJECT
+// ============
+// This uses combined Media versions from:
+// Simon Smith: https://github.com/simonsmith/components-media
+// Harry Roberts: https://github.com/csswizardry/inuit.css/blob/master/objects/_media.scss
+
+// NOTE, .Media_body element can't be a <span>
+// Usage:
+// <div class="Media">
+//   <img class="Media-object" src="assets/images/checklist-tick.png">
+//   <p class="Media-body">
+//     A medical certificate and a completed Self-Assessment questionaire if you have a health condition, injury or disability that stops you working full-time
+//   </p>
+// </div>
+
+
+// ============
+// Clear floats
+// ============
+.Media,
+.Media-body {
+  overflow: hidden;
+}
+
+
+// ============
+// Images and video
+// ============
+// .Media-object video,
+// .Media-object iframe,
+.Media-object img,
+.Media-object svg {
+  display: block;
+}
+
+
+// ============
+// Modifiers
+// ============
+
+// Align left (default) ============
+.Media-object {
+  float: left;
+}
+
+// Align right ============
+// .Media--alignRight .Media-object {
+//   float: right;
+// }
+
+// Align center ============
+// .Media--centered {
+//   display: inline-block;
+//   // > div { text-align: left; }
+//   > * { text-align: left; }
+// }

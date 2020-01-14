@@ -1,0 +1,48 @@
+// ============
+// $FIT MEDIA CONTENT / MAINTAIN ASPECT RATIO
+// ============
+
+// e.g.
+// <div class="Column">
+//   <div class="ShowPanel">
+//     <img src="http://lorempixel.com/400/300/nature/" alt="..." />
+//   </div>
+//   <div class="ShowPanel">
+//     <iframe width="560" height="315" src="..."></iframe>
+//   </div>
+// </div>
+//
+// .ShowPanel {
+//   @include fit-media(16, 9);
+// }
+
+@mixin fit-media($width, $height) {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 0;
+  padding-top: ($height / $width) * 100%;
+
+  > img,
+  > iframe,
+  > object {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  > img { // don't stretch the image
+    min-width: 100%;
+    min-height: 100%;
+    // Set up proportionate scaling
+    width: 100%;
+    height: auto;
+  }
+
+  > iframe,
+  > object {
+    width: 100%;
+    height: 100%;
+  }
+}

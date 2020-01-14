@@ -1,0 +1,66 @@
+// ========================
+// Buttons
+// ========================
+
+// Base button styles
+.Button {
+  @extend %font-medium !optional;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  appearance: none;
+  text-decoration: none;
+  cursor: pointer;
+  height: $button-height;
+  margin: 0;
+  padding: 0 $button-horizontal-padding;
+  position: relative;
+  text-align: center;
+  user-select: none;
+  white-space: normal;
+  border: none;
+  border-radius: $button-border-radius;
+  min-width: $button-min-width;
+  transition: all $button-transition-speed ease-in-out;
+}
+
+
+// ========================
+// MODIFIERS
+// ========================
+.Button--block {
+  width: 100%;
+}
+
+.Button--small {
+  @extend %small !optional;
+  height: $button-height * 0.8;
+  padding: 0 $button-horizontal-padding / 2;
+  min-width: $button-min-width / 2;
+}
+
+
+// ========================
+// UI STATES
+// ========================
+.Button {
+  &:hover,
+  &:focus,
+  &:active,
+  &:disabled,
+  &.is-disabled,
+  &.is-loading {
+    text-decoration: none;
+    outline: none;
+  }
+
+  &.is-loading {
+    cursor: wait;
+  }
+
+  &:disabled,
+  &.is-disabled {
+    cursor: not-allowed;
+    opacity: $button-disabled-opacity;
+  }
+}

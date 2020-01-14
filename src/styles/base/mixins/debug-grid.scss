@@ -1,0 +1,22 @@
+// ============
+// DEBUG GRID
+// ============
+
+// Adds a background to the element that displays grid columns based on the provided parameters
+// Intended to be used in conjunction with AINT's `.Grid` classes, for debugging and test purposes
+
+// USAGE
+// .element {
+//   @include debug-grid($grid-gutter-lg, 12);
+// }
+
+@mixin debug-grid($gutterSize, $columns, $colour: rgba(red, 0.25)) {
+  $_colWidthNoGutter: 1 / $columns * 100%;
+  $_colWidth: calc(#{$_colWidthNoGutter} - #{$gutterSize / 2});
+
+  background: repeating-linear-gradient(to right, transparent, $gutterSize * 0.5, $colour $gutterSize * 0.5, $_colWidth, transparent $_colWidth, transparent calc(#{$_colWidth} + #{$gutterSize * 0.5}));
+
+  > * {
+    mix-blend-mode: overlay;
+  }
+}

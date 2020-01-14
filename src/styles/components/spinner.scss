@@ -1,0 +1,98 @@
+// ============
+// $SPINNER (IE10+)
+// ============
+
+// Usage:
+// <div class="Spinner">
+//    <i></i><i></i><i></i><i></i><i></i><i></i>
+// </div>
+
+$spinner-duration: 1.2; // in seconds
+$spinner-direction: '-'; // '-' = clockwise, '+' = anti-clockwise. this seems odd, but we're using negative delays to cause immediate beginning of animation
+$spinner-steps: 12; // NOTE: this must be an even number and the html requires half as many <i> or <span> elements ($spinner-steps / 2)
+$spinner-arm-length: 7px;
+$spinner-arm-width: 2px;
+$spinner-diameter: 23px;
+$spinner-colour: $grey-dark;
+$spinner-fade-to-opacity: 0.1;
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  100% { opacity: $spinner-fade-to-opacity; }
+}
+
+// NOTE: is this prefix required? or is a prefix parser installed?
+// @-webkit-keyframes pulse {
+//   0% { opacity: 1; }
+//   100% { opacity: $spinner-fade-to-opacity; }
+// }
+
+.Spinner {
+  display: inline-block;
+  position: relative;
+  width: $spinner-diameter;
+  height: $spinner-diameter;
+
+  * {
+    display: block;
+    left: 0;
+    top: 0;
+    position: absolute;
+    height: $spinner-diameter;
+    width: $spinner-diameter;
+
+    &::before,
+    &::after {
+      animation: pulse #{$spinner-duration}s infinite;
+      content: '';
+      position: absolute;
+      left: #{($spinner-diameter - $spinner-arm-width) / 2};
+      height: $spinner-arm-length;
+      width: $spinner-arm-width;
+      border-radius: $spinner-arm-width / 2;
+      background-color: $spinner-colour;
+    }
+    &::before { top: 0; }
+    &::after { bottom: 0; }
+  }
+}
+
+@for $i from 1 through ($spinner-steps / 2) {
+  $spinner-angle: #{$spinner-direction}#{(360 / $spinner-steps) * $i}deg;
+
+  .Spinner *:nth-child(#{$i}) {
+    transform: rotate($spinner-angle);
+    // by making these delay values negative the animation begins immediately
+    &::before {
+      animation-delay: -#{($i * $spinner-duration) / $spinner-steps}s;
+    }
+
+    &::after {
+      animation-delay: -#{(($spinner-steps / 2) + $i) * $spinner-duration / $spinner-steps}s;
+    }
+  }
+}
+
+
+// ============
+// Spinner in a Button
+// ============
+// .Button {
+//   .Spinner {
+//     display: none;
+//     position: absolute;
+//     right: 8.5px;
+//     top: 8.5px;
+//     * {
+//       &::before,
+//       &::after {
+//         background-color: $white;
+//       }
+//     }
+//   }
+//   &[disabled] {
+//     .Spinner {
+//       display: block;
+//     }
+//   }
+// }

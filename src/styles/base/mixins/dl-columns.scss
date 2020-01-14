@@ -1,0 +1,37 @@
+// ============
+// $DEFINITION LIST COLUMNS
+// ============
+
+// USAGE
+// dl.my-definition-list {
+//   @include dl--columns(25%, 25%, $v*2, $v);
+// }
+
+// NOTE
+// 1. Remove browser default margins
+// 2. Excludes top and bottom item spacing by default
+
+@mixin dl--columns($dt-width, $dt-width-desktop, $dl-gutter-width: $v * 2, $dl-row-height: $v) {
+  margin-top: 0; // 1
+  margin-bottom: 0; // 1
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+
+  dt {
+    width: $dt-width;
+    @media #{$desktop} { width: $dt-width-desktop; }
+  }
+
+  dd {
+    margin-left: 0;
+    padding-left: $dl-gutter-width;
+    width: calc(100% - #{$dt-width});
+    @media #{$desktop} { width: calc(100% - #{$dt-width-desktop}); }
+  }
+
+  dt,	dd { // 2
+    &:not(:first-of-type) { padding-top: #{$dl-row-height / 2}; }
+    &:not(:last-of-type) { padding-bottom: #{$dl-row-height / 2}; }
+  }
+}

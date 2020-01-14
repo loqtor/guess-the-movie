@@ -1,0 +1,21 @@
+// ============
+// Z-indices
+// ============
+$z-0: 0;
+$z-10: 10;
+$z-20: 20;
+$z-30: 30;
+$z-40: 40;
+$z-50: 50;
+
+
+// ============
+// Form elements
+// ============
+$form-element-height:          40px; // button, select
+$form-element-border-colour:   rgba($black, 0.25);
+$form-element-border-width:    2px;
+$form-element-border-radius:   3px;
+$form-element-focus-color:     $active;
+$form-element-disabled-color:  transparentize($grey-med, 0.5);
+$form-element-padding:         $h * 2;
