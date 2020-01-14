@@ -1,13 +1,13 @@
 import React from 'react';
 import ReactGA from 'react-ga';
 import ReactDOM from 'react-dom';
-import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import { composeWithDevTools } from 'redux-devtools-extension';
-import { createStore, applyMiddleware } from 'redux'
-import createSagaMiddleware from 'redux-saga'
-import { Provider } from 'react-redux'
+import { createStore, applyMiddleware } from 'redux';
+import createSagaMiddleware from 'redux-saga';
+import { Provider } from 'react-redux';
 
-import { RootReducer } from "./store/reducers";
+import { RootReducer } from './store/reducers';
 
 import * as serviceWorker from './serviceWorker';
 
