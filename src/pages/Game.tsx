@@ -586,11 +586,11 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
 
     if (status === GameStatus.AUTHORIZING) {
       return (
-        <div className="Container">
+        <div className="Container u-textCenter">
           <h1 className="h3 u-mT-lg u-textCenter">Guess the Movie!</h1>
           <hr />
           <Notification>
-            <h2>This game uses Speech Recognition for playing.</h2>
+            <h4 className="u-mT-lg">This game uses Speech Recognition for playing.</h4>
             <p>Please allow the microphone to be used on this page to start the game.</p>
           </Notification>
         </div>
