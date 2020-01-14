@@ -1,0 +1,49 @@
+html {
+  @extend %font-medium !optional;
+  @include font($base-font-size);
+  line-height: $base-line-height;
+  color: $text;
+  // Better Font Rendering
+  font-feature-settings: "kern" 1;
+  font-kerning: normal;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// Text highlight color
+// NOTE: must be specified individually
+::selection { background: $highlight; }
+::-moz-selection { background: $highlight; }
+
+a {
+  color: $link;
+  text-decoration: underline;
+  @include hover() {
+    color: $active;
+  }
+}
+
+em, i { font-style: italic; }
+strong,b { @extend %font-bold !optional; }
+
+ul { list-style-type: disc; }
+ol { list-style: decimal; }
+
+sub,
+sup {
+  @extend %small !optional;
+  line-height: 0;
+}
+
+hr {
+  border: none;
+  margin: 0;
+  background-color: $border;
+  height: 1px;
+}
+
+// Phone numbers ============
+// Avoid wrapping phone numbers onto multiple lines
+[href="tel"] { white-space: nowrap; }
+

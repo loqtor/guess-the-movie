@@ -4,6 +4,7 @@ import Swiper, { SwiperOptions } from 'swiper';
 const SWIPER_DEFAULT_OPTIONS: SwiperOptions = {
   direction: 'horizontal',
   slidesPerView: 1,
+  effect: 'fade',
   containerModifierClass: 'swiper-container',
   wrapperClass: 'swiper-wrapper',
   slideClass: 'swiper-slide',

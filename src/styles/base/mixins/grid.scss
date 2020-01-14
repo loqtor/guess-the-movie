@@ -1,0 +1,78 @@
+// ============
+// CSS GRID
+// ============
+// Older (basic) version of css grid supported by IE10/11
+// (postcss prefixer doesn't support this version)
+
+// USAGE ==========
+// .Example {
+//   @include grid(1fr 320px, auto 1fr);
+// }
+// .Example-child1 {
+// 	 @include grid-column(2);
+// 	 @include grid-row(1, 2);
+// }
+//
+// OUTPUT ==========
+// .Example {
+//   display: -ms-grid;
+//   display: grid;
+//   -ms-grid-columns: 1fr 320px;
+//   grid-template-columns: 1fr 320px;
+//   -ms-grid-rows: auto 1fr;
+//   grid-template-rows: auto 1fr;
+// }
+// .Example-item1 {
+//   -ms-grid-column: 2;
+//   grid-column: 2;
+//   -ms-grid-row: 1;
+//   -ms-grid-row-span: 2;
+//   grid-row: 1 / span 3;
+// }
+
+// ============
+// Container - define grid
+// ============
+
+@mixin grid($args... /* column-widths [, row-heights]? */) {
+  $columns: nth($args, 1);
+  display: -ms-grid;
+  display: grid;
+  -ms-grid-columns: $columns;
+  grid-template-columns: $columns;
+  @if length($args) > 1 {
+    $rows: nth($args, 2);
+    -ms-grid-rows: $rows;
+    grid-template-rows: $rows;
+  }
+}
+
+// ============
+// Child items - define positioning & span (optional)
+// ============
+
+@mixin grid-column($args... /* column-position [, column-span]? */) {
+  $position: nth($args, 1);
+  $span: null;
+  -ms-grid-column: $position;
+  @if length($args) > 1 {
+    $span: nth($args, 2);
+    -ms-grid-column-span: $span;
+    grid-column: $position / span $span;
+  } @else {
+    grid-column: $position;
+  }
+}
+
+@mixin grid-row($args... /* row-position [, row-span]? */) {
+  $position: nth($args, 1);
+  $span: null;
+  -ms-grid-row: $position;
+  @if length($args) > 1 {
+    $span: nth($args, 2);
+    -ms-grid-row-span: $span;
+    grid-row: $position / span $span;
+  } @else {
+    grid-row: $position;
+  }
+}

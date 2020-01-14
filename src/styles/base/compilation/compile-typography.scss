@@ -1,0 +1,103 @@
+// ==========================================
+// COMPILE FONT PLACEHOLDERS - DO NOT EDIT
+// ==========================================
+@each $font-name, $style in $base-font-styles {
+  $uc-font-name: capitalise(#{$font-name});
+
+  %font-#{$font-name} {
+    font-family: map-get($style, font-family);
+    font-style: map-get($style, font-style);
+    font-weight: map-get($style, font-weight);
+  }
+
+  .u-text#{$uc-font-name} {
+    font-family: map-get($style, font-family) !important;
+    font-style: map-get($style, font-style) !important;
+    font-weight: map-get($style, font-weight) !important;
+  }
+}
+
+
+@function strip-unit($value) {
+  @return $value / ($value * 0 + 1);
+}
+
+
+@mixin fluid-type($min-vw, $max-vw, $min-font-size, $max-font-size) {
+  $u1: unit($min-vw);
+  $u2: unit($max-vw);
+  $u3: unit($min-font-size);
+  $u4: unit($max-font-size);
+
+  @if $u1 == $u2 and $u1 == $u3 and $u1 == $u4 {
+    font-size: $min-font-size;
+    @media screen and (min-width: $min-vw) {
+      font-size: calc(#{$min-font-size} + #{strip-unit($max-font-size - $min-font-size)} * ((100vw - #{$min-vw}) / #{strip-unit($max-vw - $min-vw)}));
+    }
+    @media screen and (min-width: $max-vw) {
+      font-size: $max-font-size;
+    }
+  }
+}
+
+
+// ==========================================
+// COMPILE TYPOGRAPHIC STYLES - DO NOT EDIT
+// ==========================================
+@each $el, $font-tag in $base-font-dimensions {
+  %#{$el} {
+    @if map-has-key($font-tag, font-family) {
+      @if map-has-key($base-font-styles, map-get($font-tag, font-family)) {
+        $family: map-get($font-tag, font-family);
+        @extend %font-#{$family} !optional;
+      } @else {
+        @error "Error in $base-font-dimensions: " + $el + " has invalid font-family '" + map-get($font-tag, font-family) + "'";
+      }
+    }
+
+    // if there is a min-size, max-size and fluid-type == true
+    // then create fluid typography
+    @if (map-has-key($font-tag, max-size) and map-has-key($font-tag, min-size) and map-has-key($font-tag, min-breakpoint) and map-has-key($font-tag, max-breakpoint)) {
+      @include fluid-type(map-get($font-tag, min-breakpoint), map-get($font-tag, max-breakpoint), map-get($font-tag, min-size), map-get($font-tag, max-size));
+      line-height: map-get($font-tag, line-height);
+      margin-top: map-get($font-tag, margin-top);
+      margin-bottom: map-get($font-tag, margin-bottom);
+
+      // if there is min-size and max-size but no fluid-type
+      // then create a breakpoint version
+    } @else if (map-has-key($font-tag, max-size) and map-has-key($font-tag, min-size)) {
+      @include font(map-get($font-tag, min-size), null, map-get($font-tag, margin-top), map-get($font-tag, margin-bottom));
+      line-height: map-get($font-tag, line-height);
+      @media #{$laptop} {
+        @include font(map-get($font-tag, max-size));
+      }
+
+      // Else the fonts are fixed size across all breakpoints
+    } @else {
+      @include font(map-get($font-tag, font-size), null, map-get($font-tag, margin-top), map-get($font-tag, margin-bottom));
+      line-height: map-get($font-tag, line-height);
+    }
+    @if (map-get($font-tag, uppercase) == true) { text-transform: uppercase; }
+    @if map-has-key($font-tag, letter-spacing) { letter-spacing: map-get($font-tag, letter-spacing); }
+  }
+
+
+  .#{$el} {
+    @extend %#{$el};
+  }
+
+  @if (
+    $el == h1 or
+    $el == h2 or
+    $el == h3 or
+    $el == h4 or
+    $el == h5 or
+    $el == h6 or
+    $el == p or
+    $el == small
+  ) {
+    #{$el} {
+      @extend %#{$el};
+    }
+  }
+}

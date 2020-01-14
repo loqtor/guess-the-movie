@@ -1,0 +1,31 @@
+// ============
+// $ICON TEXT
+// ============
+// @NOTE:
+// 1. Used for snippets of text with an icon next to it (usually displayed inline).
+// 2. The structure is ALWAYS icon first and text second, by default the icon will be left aligned.
+// 3. The icon direction can be swapped using the modifier class of `.IconText--reverse` as seen below.
+//
+// @USAGE:
+// <span class="IconText IconText--reverse">
+//   <span class="ic ic-list"></span>
+//   <span>12 tasks</span>
+// </span>
+
+.IconText {
+  @include font(14px, 18px);
+  display: inline-flex; // 1
+  align-items: center;
+  // color: $steel;
+
+  .ic { @include font(16px, 18px); }
+}
+
+.IconText--reverse {
+  flex-direction: row-reverse; // 3
+  .ic { margin-left: 5px; }
+}
+
+.IconText:not(.IconText--reverse) {
+  .ic { margin-right: 5px; }
+}

@@ -1,0 +1,18 @@
+// ============
+// $POSITION
+// ============
+
+@mixin position($namespace: "") {
+  .u-#{$namespace}posRelative { position: relative !important; }
+  .u-#{$namespace}posAbsolute { position: absolute !important; }
+  .u-#{$namespace}posStatic { position: static !important; }
+  .u-#{$namespace}posFixed { position: fixed !important; }
+  .u-#{$namespace}posSticky { position: sticky !important; }
+}
+
+@include display();
+@media #{$mobile-only} { @include position("sm-"); }
+@media #{$tablet} { @include position("md-"); }
+// @media #{$laptop} { @include display("lg-"); }
+// @media #{$desktop} { @include display("xl-"); }
+// @media #{$widescreen} { @include display("xx-"); }

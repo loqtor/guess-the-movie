@@ -1,0 +1,86 @@
+// ============
+// $PAGINATION
+// ============
+
+$pagination-button-size: 40px;
+
+.Pagination {
+  @media #{$tablet} {
+    display: flex;
+    align-items: center;
+  }
+}
+
+// <ul>
+.Pagination-list {
+  display: flex;
+  // reset default browser list styles
+  list-style: none;
+  padding-left: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+// <a>
+.Pagination-item {
+  @extend .Button !optional;
+  @extend .Button--secondary !optional;
+  margin-right: 4px;
+  text-decoration: none;
+  color: $violet;
+  // override .Button width
+  padding-left: $h * (2 / 3);
+  padding-right: $h * (2 / 3);
+  min-width: $pagination-button-size;
+
+  &.is-active {
+    background-color: $violet;
+    color: $white;
+    box-shadow: inset 0 0 0 $button-border-width $violet;
+  }
+}
+
+// << and >>
+.Pagination-item--back,
+.Pagination-item--forward {
+  position: relative;
+
+  &::before,
+  &::after {
+    @extend %icon !optional;
+    pointer-events: none;
+    position: absolute;
+    top: 12px;
+    color: inherit;
+  }
+}
+
+// .Pagination-item--back::before,
+// .Pagination-item--back::after {
+//   @extend .icon-caret-left:before !optional; // NOTE edit this name according to your icons
+// }
+
+// .Pagination-item--forward::before,
+// .Pagination-item--forward::after {
+//   @extend .icon-caret-right:before !optional; // NOTE edit this name according to your icons
+// }
+
+.Pagination-item--back::before,
+.Pagination-item--forward::before {
+  left: 10px;
+}
+
+.Pagination-item--back::after,
+.Pagination-item--forward::after {
+  right: 10px;
+}
+
+// Text, e.g. "Showing 1-5 of 20 results"
+.Pagination-text {
+  margin-top: $v / 2;
+  @media #{$tablet} {
+    margin-top: 0;
+    margin-bottom: 0;
+    margin-left: $h / 2;
+  }
+}

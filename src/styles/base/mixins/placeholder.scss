@@ -1,0 +1,36 @@
+// Usage
+//
+// .Input {
+//   input {
+//     // long way
+//     @include placeholder {
+//       color: transparent;
+//       // whatever else you want here
+//     }
+//     // Shorthand for just colour
+//     @include placeholder(transparent);
+//   }
+// }
+
+
+@mixin placeholder($color: null) {
+  &::-webkit-input-placeholder {
+    @if $color { color: $color; }
+    @content;
+  }
+
+  &::-moz-placeholder {
+    @if $color { color: $color; }
+    @content;
+  }
+
+  &:-moz-placeholder {
+    @if $color { color: $color; }
+    @content;
+  }
+
+  &:-ms-input-placeholder {
+    @if $color { color: $color; }
+    @content;
+  }
+}

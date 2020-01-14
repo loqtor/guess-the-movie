@@ -1,0 +1,50 @@
+// ==========================================
+// Capitalise the first letter of a string
+// ==========================================
+// usage: capitalise("hello");
+// output: Hello
+// ==========================================
+@function capitalise($string) {
+  @return to-upper-case(str-slice($string, 1, 1)) + str-slice($string, 2);
+}
+
+
+// ==========================================
+// Un-capitalise the first letter of a string
+// ==========================================
+// usage: uncapitalise("Hello");
+// output: hello
+// ==========================================
+@function uncapitalise($string) {
+  @return to-lower-case(str-slice($string, 1, 1)) + str-slice($string, 2);
+}
+
+
+// ==========================================
+//  Camel-case a string
+// ==========================================
+// usage:
+//    camelize("my-function-name")
+//    camelize("Another class constructor.")
+// output:
+//    myFunctionName
+//    AnotherClassConstructor
+// ==========================================
+@function camel-case($string) {
+  $progress: $string;
+  $result: "";
+  $exclude: " ", "-", "–", "—", "_", ",", ";", ":", ".";
+
+  @while str-length($progress) > 0 {
+    $char: str-slice($progress, 1, 1);
+
+    @if contain($exclude, $char) {
+      $progress: capitalise(str-slice($progress, 2, 2)) + str-slice($progress, 3);
+    } @else {
+      $result: $result + $char;
+      $progress: str-slice($progress, 2);
+    }
+  }
+
+  @return $result;
+}

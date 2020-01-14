@@ -1,0 +1,81 @@
+// ========================
+// Feedback List
+// ========================
+// @note: goes here
+// ========================
+.FeedbackList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  height: 100%;
+
+  counter-reset: question-numbers;
+}
+
+// ========================
+// ELEMENTS
+// ========================
+.FeedbackList-item {
+  position: relative;
+  display: flex;
+  padding-left: 48px;
+  min-height: 28px;
+  margin-bottom: 14px;
+  align-items: center;
+
+  counter-increment: question-numbers;
+
+  &::before {
+    @extend %p;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 40px;
+    // transform: translateY(-50%);
+    text-align: right;
+    margin: 0;
+    display: block;
+    content: counter(question-numbers) ". ";
+  }
+}
+.FeedbackList-item-placeholder,
+.FeedbackList-item-answer {
+  margin: 0;
+}
+
+.FeedbackList-item-placeholder {
+  color: transparent;
+  background-color: $border;
+}
+
+
+// ========================
+// MODIFIERS
+// ========================
+// .FeedbackList--modifier {}
+
+// ========================
+// UI STATES
+// ========================
+.FeedbackList-item.is-incorrect {
+  color: $error;
+
+  &::before {
+    @extend %icon;
+    @extend .icon-incorrect:before;
+    line-height: 28px;
+  }
+}
+
+.FeedbackList-item.is-correct {
+  color: $success;
+
+  &::before {
+    @extend %icon;
+    @extend .icon-correct:before;
+    line-height: 28px;
+  }
+}
