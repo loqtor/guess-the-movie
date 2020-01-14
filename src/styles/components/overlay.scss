@@ -1,0 +1,27 @@
+// ============
+// $OVERLAY
+// ============
+
+// Cover background - use with .Modal, or .Spinner &c.
+
+// Prevent page scrollability beneath Overlay
+// Usage: add/remove class to <body> or framework's equivalent wrapper
+// e.g. <div id="app" class="overlay-is-active">
+.overlay-is-active {
+  overflow-y: hidden;
+}
+
+.Overlay.is-hidden {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.Overlay {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.7);
+  transition: opacity 0.2s;
+}

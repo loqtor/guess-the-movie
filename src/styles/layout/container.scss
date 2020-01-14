@@ -1,0 +1,23 @@
+// ============
+// $CONTAINER
+// ============
+
+%Container {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: $container-gutter-sm;
+  padding-right: $container-gutter-sm;
+
+  @media #{$tablet} {
+    padding-left: $container-gutter-lg;
+    padding-right: $container-gutter-lg;
+  }
+
+  @if $fixed-breakpoints == true {
+    @media #{$tablet} { width: rem($container1); }
+    @media #{$laptop} { width: rem($container2); }
+  }
+}
+
+.Container { @extend %Container !optional; }

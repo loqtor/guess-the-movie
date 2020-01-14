@@ -1,0 +1,12 @@
+// ==========================================
+// Convert PX units into REMs
+// ==========================================
+// usage: rem(12px)
+// output: 0.75rem
+// ==========================================
+
+@function rem($size) {
+  $remSize: $size / $base-font-size;
+
+  @return #{$remSize}rem;
+}

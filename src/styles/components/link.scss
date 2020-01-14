@@ -1,0 +1,17 @@
+// ============
+// $LINK
+// ============
+
+.Link {
+  color: $active;
+  @include hover('is-active') {
+    color: $active;
+  }
+}
+
+.Link--reversed {
+  color: $white;
+  @include hover('is-active') {
+    color: $black;
+  }
+}

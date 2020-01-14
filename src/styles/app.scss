@@ -1,61 +1,11 @@
-html, body {
-  position: relative;
-  height: 100%;
-}
+/* AINTCSS - Alphero Inverted Triangle CSS */
 
-body {
-  background: #eee;
-  font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
-  font-size: 14px;
-  color:#000;
-  margin: 0;
-  padding: 0;
-}
-
-.App {
-  max-width: 1024px;
-  margin: 0 auto;
-}
-
-.swiper-slide {
-  text-align: center;
-}
-
-.text-red {
-  color: red;
-}
-
-.text-bold {
-  font-weight: bold;
-}
-
-.text-right {
-  text-align: right;
-}
-
-.text-centered {
-  text-align: center;
-}
-
-.margin-bottom {
-  margin-bottom: 0.1em;
-}
-
-.container {
-  padding: 0.5em;
-}
-
-.movie-thumb {
-  margin-right: 10px;
-}
-
-.current-movie {
-  box-shadow: 0 0 0 1px rgb(87, 61, 92);
-}
-
-.Notification {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translateX(-50%) translateY(-50%);
-}
+// - start with nothing and layer up our specificity
+@import "base/functions/index";    // \•••••••••••••••/  1. functions
+@import "base/settings/index";     //  \•••••••••••••/   2. settings and variables
+@import "base/mixins/index";       //   \•••••••••••/    3. mixins
+@import "base/index";              //     \•••••••/      4. html elements, typography and naturalize
+@import "layout/index";            //      \•••••/       5. layout and layout helpers
+@import "components/index";        //       \•••/        6. designed components / chunks of ui
+@import "utilities/index";         //        \•/         7. helpers and overrides
+@import "print";                   //         •          8. print styles (conditionally included)

@@ -1,0 +1,71 @@
+// ============
+// $TODO
+// ============
+// Utility for highlighting items on the page as "Todo", visually, without affecting box sizing.
+// Can also override the text with a `data-todo` attribute
+//
+// e.g.
+//  Render a flashing border with a banner containing "Todo"
+//    <div class="Something u-todo"> … </div>
+//
+//  Render a flashing border with a banner containing the words "Not working"
+//    <div class="Something u-todo" data-todo="Not working"> … </div>
+//
+
+// ============
+// Config
+// ============
+$todo-color: $primary;
+$todo-text-color: $white;
+$todo-throb-speed: 1.2s;
+
+
+// ============
+// Animations
+// ============
+@keyframes border-throb {
+  100% { box-shadow: 0 0 4px 3px transparentize($todo-color, 0.7); }
+}
+@keyframes throb-fade {
+  100% { opacity: 0.3; }
+}
+
+// ============
+// Utility
+// ============
+// Flashing border
+.u-todo {
+  position: relative;
+  box-shadow: 0 0 4px 3px $todo-color;
+  border-collapse: separate; // Needed for IE
+  border-radius: 5px;
+  opacity: 0.8;
+
+  animation: border-throb $todo-throb-speed alternate linear infinite;
+
+  // Flashing banner
+  &::before {
+    content: 'Todo';
+
+    position: absolute;
+    padding: 4px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+
+    background-color: $todo-color;
+    color: $todo-text-color;
+    opacity: 0.8;
+
+    left: 0;
+    top: 0;
+
+    transform: translate(-50%, -50%) scale(1) rotate(-45deg);
+
+    animation: throb-fade $todo-throb-speed alternate linear infinite;
+  }
+
+  // Data attribute override
+  &[data-todo]::before {
+    content: attr(data-todo);
+  }
+}

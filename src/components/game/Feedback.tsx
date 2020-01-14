@@ -3,14 +3,11 @@ import classnames from 'classnames';
 
 import { Question } from '../../store/selectors/movies';
 
-import { PhotoCropper, ImagePosition } from './PhotoCropper';
-import { IMAGE_BASE_URL, THUMBNAIL_WIDTH } from '../../constants/config';
 import { Result } from '../../pages/Game';
 import { Movie } from '../../store/reducers/movies';
 
 interface Props {
   currentQuestionIndex: number;
-  imagePosition: ImagePosition;
   questionnaire: Question[];
   results: {
     [keyof: string]: Result,
@@ -19,34 +16,40 @@ interface Props {
 
 export const Feedback = (props: Props) => {
   const {
-    imagePosition,
-    currentQuestionIndex,
     questionnaire,
     results,
   } = props;
 
+
   return (
-    <ul className="pure-menu-list container">
+    <ol className="FeedbackList">
       {questionnaire.map((question: Question, index: number) => {
         const movie: Movie = question.movie;
-        const thumbnailClasses =  classnames('movie-thumb', {
-          'current-movie': currentQuestionIndex === index,
+        const isCorrect = results[movie.id] && results[movie.id].isCorrect;
+        const isIncorrect = results[movie.id] && !results[movie.id].isCorrect;
+
+        const itemClasses =  classnames('FeedbackList-item', {
+          'is-correct': isCorrect,
+          'is-incorrect': isIncorrect,
         });
 
+
         return (
-          <li key={`result-${movie.id}`} className="pure-menu-item">
-            <PhotoCropper
-              classes={thumbnailClasses}
-              imageUrl={`${IMAGE_BASE_URL}${movie.poster_path}`}
-              expectedImageWidth={THUMBNAIL_WIDTH}
-              imagePosition={imagePosition}
-            />
-            {results[movie.id] && (
-              <span>{movie.title}: <b>{results[movie.id] && results[movie.id].isCorrect ? 'Correct' : 'Incorrect'}</b></span>
+          <li key={`result-${movie.id}`} className={itemClasses}>
+            {results[movie.id] ? (
+              // The visible answer
+              <p className="FeedbackList-item-answer">
+                {movie.title}
+              </p>
+            ) : (
+              // Placeholder before answer is shown
+              <p className="FeedbackList-item-placeholder">
+                {movie.title}
+              </p>
             )}
           </li>
         )
       })}
-    </ul>
+    </ol>
   )
 };

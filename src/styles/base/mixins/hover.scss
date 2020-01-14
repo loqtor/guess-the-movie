@@ -1,0 +1,19 @@
+// ============
+// $HOVER ACTIVE FOCUS
+// ============
+
+// Can take an optional class name
+// @USAGE
+// @include hover('is-active') {
+// 	color: red;
+// 	text-decoration: underline;
+// }
+
+@mixin hover($class: "") {
+  &:focus, &:hover, &:active {
+    @content;
+  }
+  @if $class != "" {
+    &.#{$class} { @content; }
+  }
+}

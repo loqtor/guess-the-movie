@@ -1,0 +1,63 @@
+// ============
+// $SELECT BOX
+// ============
+
+// Usage:
+// <div class="Select">
+//   <select>
+//     <option></option>
+//   </select>
+// </div>
+
+.Select {
+  position: relative;
+  display: block;
+
+  select {
+    height: $form-element-height;
+    appearance: none;
+    background: $white;
+    border-radius: 3px;
+    box-shadow: inset 0 0 5px 0 rgba(173, 173, 173, 0.5);
+    border: 1px solid $grey-light;
+    padding-left: $h / 2;
+    padding-right: $h * 1.5; // affordance space
+    outline: none;
+    width: 100%;
+
+    // Hide the default arrow in IE ============
+    &::-ms-expand {
+      display: none;
+    }
+
+    &:focus {
+      box-shadow: 0 0 0 1px $form-element-focus-color;
+      border-color: $form-element-focus-color;
+    }
+  }
+
+  // Dropdown arrow ============
+  &::before {
+    pointer-events: none;
+    position: absolute;
+    content: '';
+    top: 17px;
+    border-top: 8px solid $form-element-focus-color;
+    right: 12px;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+  }
+
+  // Error Styles ============
+  &.has-error {
+    select {
+      box-shadow: 0 0 0 1px $error;
+      border-color: $error;
+      color: $error;
+    }
+
+    &::before {
+      color: transparentize($error, 0.35);
+    }
+  }
+}

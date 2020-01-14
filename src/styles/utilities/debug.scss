@@ -1,0 +1,28 @@
+// ============
+// $DEBUG
+// ============
+
+// Classes that add debug info to the page
+
+// NOTE: These classes are disabled by default - uncomment the import in _index.scss to enable
+
+// ============
+// Debug grid
+// ============
+// Displays the standard grid columns on all `.Grid` elements
+// Intended to be added to a top-level element (e.g. the body element)
+//
+// NOTE: May need to be tweaked if your project has modified the layout/grid.scss setup
+.u-debug-grid {
+  .Grid {
+    @include debug-grid($grid-gutter-sm, 12);
+
+    @media #{$tablet} {
+      @include debug-grid($grid-gutter-lg, 12);
+    }
+  }
+
+  .Grid--noGutter {
+    @include debug-grid(1px, 12);
+  }
+}

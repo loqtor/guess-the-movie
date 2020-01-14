@@ -1,0 +1,54 @@
+// ============
+// $MEDIA QUERIES
+// ============
+// Usage:
+// @media #{$mobile-only} {
+//   ...
+// }
+
+// === A miniscule unit to ensure fullest no gaps between ranges
+$infinitesimal: 0.01px;
+
+
+// ============
+// Ranges
+// ============
+// Define the lower and upper bounds for each media size
+$sm-range: (0, $breakpoint1 - $infinitesimal); // 0-767
+$sm-md-range: ($breakpoint1, $breakpoint2 - $infinitesimal); // 768-1023
+$md-lg-range: ($breakpoint2, $breakpoint3 - $infinitesimal); // 1024-1279
+$lg-xl-range: ($breakpoint3, $breakpoint4 - $infinitesimal); // 1280-1599
+$xl-range: ($breakpoint4); // 1600+
+
+
+// ============
+// Queries
+// ============
+// NOTE the usage of "print" media types below. These may or may not be desired!
+//
+// We build things mobile first, so declarations with no media query should be the mobile view,
+// being overwritten by using breakpoints below. The "*-only" queries are much like !important tags;
+// only use them when you're totally stuck and comment in situ to explain why you need to use them.
+
+$tablet: "print, (min-width: #{lower-bound($sm-md-range)})" !default;
+$laptop-only: "(min-width: #{lower-bound($md-lg-range)}) and (max-width:#{upper-bound($lg-xl-range)})" !default;
+$laptop: "(min-width: #{lower-bound($md-lg-range)})" !default;
+$desktop-only: "(min-width: #{lower-bound($lg-xl-range)}) and (max-width:#{upper-bound($xl-range)})" !default;
+$desktop: "(min-width: #{lower-bound($lg-xl-range)})" !default;
+$widescreen: "(min-width: #{lower-bound($xl-range)})" !default;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+$mobile-only: "(max-width: #{upper-bound($sm-range)})" !default; // currently required
+// $tablet-only: "(min-width: #{lower-bound($sm-md-range)}) and (max-width:#{upper-bound($md-lg-range)})" !default;
+// $laptop-only: "(min-width: #{lower-bound($md-lg-range)}) and (max-width:#{upper-bound($lg-xl-range)})" !default;
+// $desktop-only: "(min-width: #{lower-bound($lg-xl-range)}) and (max-width:#{upper-bound($xl-range)})" !default;
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// ============
+// Query Hacks
+// ============
+// IE 10 & 11 ============
+$ie: "screen and (-ms-high-contrast: active), (-ms-high-contrast: none)" !default;
+// Edge ============
+// USAGE: @supports #{$edge} {...}
+// $edge: "(-ms-ime-align:auto)" !default;

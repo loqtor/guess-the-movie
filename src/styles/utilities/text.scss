@@ -1,0 +1,88 @@
+// ============
+// $TEXT
+// ============
+
+
+// ============
+// Horizontal text alignment
+// ============
+@mixin text-align($namespace: "") {
+  .u-#{$namespace}textCenter { text-align: center !important; }
+  .u-#{$namespace}textLeft { text-align: left !important; }
+  .u-#{$namespace}textRight { text-align: right !important; }
+}
+@include text-align();
+@media #{$mobile-only} { @include text-align("sm-"); }
+@media #{$tablet} { @include text-align("md-"); }
+// @media #{$laptop} { @include text-align("lg-"); }
+// @media #{$desktop} { @include text-align("xl-"); }
+// @media #{$widescreen} { @include text-align("xx-"); }
+
+
+// ============
+// Word breaking
+// ============
+// Break strings when their length exceeds the width of their container
+.u-textBreakWord { word-break: break-word !important; }
+.u-textBreakAll { word-break: break-all !important; }
+
+
+// ============
+// Prevent whitespace wrapping
+// ============
+// Avoid unsightly breaks e.g. <span class="u-textNoWrap">New Zealand</span>
+.u-textNoWrap { white-space: nowrap !important; }
+
+
+// ============
+// Text truncation ...
+// ============
+// Prevent text from wrapping onto multiple lines, and truncate with an ellipsis.
+// 1. Ensure that the node has a maximum width after which truncation can occur.
+// 2. Fix for IE 8/9 if `word-wrap: break-word` is in effect on ancestor nodes.
+.u-textTruncate {
+  max-width: 100%; // 1
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  word-wrap: normal !important; // 2
+}
+
+
+// ============
+// Text selection
+// ============
+.u-textNoSelect {
+  user-select: none;
+}
+
+
+// ============
+// Font weights
+// ============
+.u-textLight { @extend %font-light !optional; }
+.u-textMedium { @extend %font-light !optional; }
+.u-textBold { @extend %font-heading !optional; }
+
+
+// ============
+// Font colours
+// ============
+.u-textSuccess { color: $success; }
+.u-textError { color: $error; }
+.u-textWarning { color: $warning; }
+.u-textGrey { color: $grey-med; }
+
+// Inherit the ancestor's text color. ============
+// .u-textInheritColor { color: inherit !important; }
+@keyframes u-textFlash {
+  0%, 100% {opacity: 100%;}
+  50% {opacity: 20%;}
+}
+
+.u-textFlash {
+  animation-name: u-textFlash;
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+  animation-direction: forwards;
+}

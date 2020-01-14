@@ -1,0 +1,9 @@
+// ==========================================
+// Strip units from a value
+// ==========================================
+// usage: strip-units(12px)
+// output: 12
+// ==========================================
+@function strip-units($number) {
+  @return $number / ($number * 0 + 1);
+}

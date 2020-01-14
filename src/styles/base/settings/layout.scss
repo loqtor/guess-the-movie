@@ -1,0 +1,54 @@
+// ==========================================
+// LAYOUT SETTINGS
+// ==========================================
+
+
+// ==========================================
+// Layout type
+// ==========================================
+// Options are:
+// • "default" (vanilla layout)
+// • "sticky" (sticky footer)
+// • "fixed" (persistent header/footer)
+$layout-type: "default";
+
+
+// ==========================================
+// Global Spacing Units
+// ==========================================
+// Vertical & horizontal spacing units.
+// Must use `rem` units, we do not recommend changing these values.
+$v: $base-line-height * 1rem; // 1.5rem = 24px
+$h: $v;
+
+
+// ==========================================
+// Grid settings
+// ==========================================
+
+// Change to `false` for a fluid container.
+$fixed-breakpoints: true;
+
+// Breakpoints must be defined in pixels, due to Chrome's
+// media-query rem always being 16px regardless of actual root em
+$breakpoint1: 768px;
+$breakpoint2: 1024px;
+$breakpoint3: 1280px;
+$breakpoint4: 1600px;
+
+// Spacing between grid cells and gutters of the container.
+$grid-gutter-sm: $h / 2;
+$grid-gutter-lg: $h;
+
+
+// Container widths take into account gutters
+$container-gutter-sm: 12px;
+$container-gutter-lg: 24px;
+$container1: $breakpoint1 - ($container-gutter-sm * 2);
+$container2: $breakpoint2 - ($container-gutter-lg * 2);
+
+// ==========================================
+// Print styles on/off
+// ==========================================
+// Change to `true` to include print styles.
+$print-styles: false;

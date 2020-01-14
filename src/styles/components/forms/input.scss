@@ -1,0 +1,88 @@
+// ============
+// $INPUT
+// ============
+// <label class="Input-label" for="demo">Input Label</label>
+// <div class="Input has-error">
+//   <input type="text" id="demo" placeholder="Type..." />
+//   <span class="Input-note">Note: Input note...</span>
+// </div>
+
+.Input {
+  position: relative;
+
+  input {
+    background: $white;
+    height: $form-element-height;
+    display: block;
+    appearance: none;
+    padding-left: $h * (2 / 3);
+    padding-right: $h * (2 / 3);
+    outline: none;
+    width: 100%;
+    border-radius: $form-element-border-radius;
+    box-shadow: inset 0 0 5px 0 rgba(173, 173, 173, 0.5);
+    border: 1px solid $border;
+    &::-webkit-input-placeholder { color: inherit; }
+    &::-moz-placeholder { color: inherit; }
+    &:-ms-input-placeholder { color: inherit; }
+    &:-moz-placeholder { color: inherit; }
+
+    &:focus {
+      box-shadow: 0 0 0 1px $form-element-focus-color;
+      border-color: $form-element-focus-color;
+    }
+  }
+
+  // Error styles ============
+  &.has-error {
+    input {
+      box-shadow: 0 0 0 1px $error;
+      border-color: $error;
+      padding-left: 40px;
+      background-color: hsl(hue($error), saturation($error), 95%);
+      &::-webkit-input-placeholder { color: $error; }
+      &::-moz-placeholder { color: $error; }
+      &:-ms-input-placeholder { color: $error; }
+      &:-moz-placeholder { color: $error; }
+    }
+
+    &::before {
+      @include font(20px);
+      @extend %icon !optional;
+
+      // @TODO repace content: '\fffd' with your own icon from icomoon.
+      content: '\fffd';
+      @extend .icon-error:before !optional;
+
+      position: absolute;
+      left: $h / 2;
+      top: 10px;
+      color: $error;
+    }
+  }
+}
+
+
+// ============
+// Label
+// ============
+.Input-label {
+  @extend %p !optional;
+  display: block;
+  margin-bottom: $v / 4;
+  cursor: pointer;
+
+  .has-error & { color: $warning; }
+}
+
+
+// ============
+// Inline note
+// ============
+.Input-note {
+  @extend %small !optional;
+  color: $text-light;
+  display: inline-block;
+  align-self: center;
+  flex-shrink: 0;
+}

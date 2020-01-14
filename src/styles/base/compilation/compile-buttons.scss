@@ -1,0 +1,28 @@
+// ==========================================
+// COMPILE ALL BUTTONS - DO NOT EDIT
+// ==========================================
+@mixin button-state($map, $state) {
+  color: nth(map-get($map, $state), 1);
+  background-color: nth(map-get($map, $state), 2);
+  @if (nth(map-get($map, $state), 3)) {
+    box-shadow: inset 0 0 0 $button-border-width nth(map-get($map, $state), 3);
+  }
+}
+
+.Button {
+  @each $name, $state in $button-states {
+    &--#{$name} {
+      &:focus { @include button-state($state, "focus"); }
+      &:hover { @include button-state($state, "hover"); }
+      &:active { @include button-state($state, "active"); }
+      &.is-loading { @include button-state($state, "loading"); }
+      // 1. '&' is our parent modifier class name.
+      // 2. Disabled state must appear after :hover etc.
+      &,            // 1.
+      &:disabled,   // 2.
+      &.is-disabled {
+        @include button-state($state, "default");
+      }
+    }
+  }
+}

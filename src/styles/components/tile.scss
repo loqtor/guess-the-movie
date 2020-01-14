@@ -1,0 +1,114 @@
+// ============
+// $TILE
+// ============
+
+// Tiles are white sections within the site layout
+// 1. widths and heights don't need to be supplied
+// 2. they inherit the size of whatever column they are placed in
+
+$tile-header-height-mobile: 60px;
+$tile-header-height-desktop: 70px;
+
+%tile-padding {
+  padding: ($v / 2) ($h / 2);
+  @media #{$tablet} {
+    padding: $v $h;
+  }
+}
+
+%tile-bleed {
+  margin: -#{$v / 2} -#{$h / 2};
+  @media #{$tablet} {
+    margin: -#{$v} -#{$h};
+  }
+}
+
+// ============
+// Common styles
+// ============
+.Tile {
+  cursor: default;
+  box-shadow: 0 2px 4px 0 rgba($grey-med, 0.5);
+  border: solid 1px $border;
+  border-radius: 3px;
+  // space subsequent tiles
+  & + & { margin-top: $v; }
+}
+
+// ============
+// Tile header (expand/collapse)
+// ============
+.Tile-head {
+  cursor: pointer;
+  @extend %tile-padding !optional;
+  background-color: $off-white;
+  display: flex;
+  align-items: center;
+  height: $tile-header-height-mobile;
+  @media #{$tablet} {
+    height: $tile-header-height-desktop;
+  }
+}
+
+// Push other tile head elements across to the right
+.Tile-head-title {
+  flex-grow: 1;
+}
+
+
+// ============
+// Tile body sections
+// ============
+.Tile-body {
+  @extend %tile-padding !optional;
+
+  &:not(:first-child) {
+    border-top: 1px solid $border;
+  }
+}
+
+// Child of .Tile-body (not a .Tile that bleeds, that would be .Tile--bleed)
+.Tile-bleed {
+  @extend %tile-bleed !optional;
+}
+
+
+// ============
+// MODIFIERS
+// ============
+
+// Collapsible tiles ============
+.Tile--collapsible {
+  transition: max-height 0.2s;
+  max-height: 1200px;
+
+  &:not(.is-open) {
+    overflow: hidden;
+    max-height: $tile-header-height-mobile;
+    @media #{$tablet} {
+      max-height: $tile-header-height-desktop;
+    }
+  }
+  // rotate chevron
+  .icon-caret-down {
+    transition: transform 0.2s;
+  }
+
+  &.is-open {
+    .icon-caret-down {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+// Plain tile – no border or background ============
+.Tile--plain {
+  background: none;
+  background: transparent;
+  border: none;
+}
+
+// Dark tile ============
+.Tile--dark {
+  background: $grey-light;
+}
