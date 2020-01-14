@@ -37,10 +37,10 @@ interface OwnStateProps {
   results: {
     [keyof: string]: Result,
   };
+  score: number;
   shouldShowHint: boolean;
   shouldShowOptions: boolean;
   status: GameStatus;
-
 }
 
 interface StateProps {
@@ -80,6 +80,7 @@ const BASE_STATE = {
   status: GameStatus.AUTHORIZING,
   currentQuestionIndex: 0,
   results: {},
+  score: 0,
   shouldShowHint: false,
   shouldShowOptions: false,
 }
@@ -106,6 +107,8 @@ const MATCH_THRESHOLD = 0.8;
 const HINT_PERCENT_TO_REPLACE = 20; // Percentage of the subtitle to be displayed when showing a hint.
 const HINT_CHARACTER = '_';
 const HINT_REPLACEABLE_CHARACTERS = /^[a-zA-Z0-9]+$/; // Only Alphanumeric characters are to be replaced for hints.
+const POINTS_PER_QUESTION = 3; 
+const POINTS_PER_SECOND = 2;
 
 class GameComponent extends React.Component<Props, OwnStateProps> {
   fuzzy: any;
@@ -234,8 +237,12 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
   }
 
   resumeGame = (result: Result) => {
+    if (this.state.status === GameStatus.CALCULATING_SCORE) {
+      return;
+    }
+
     const { questionnaire } = this.props;
-    const { currentQuestionIndex, results } = this.state;
+    const { currentQuestionIndex, results, score } = this.state;
 
     const newResult = { [result.movie.id]: result };
     const newResults = {...results, ...newResult};
@@ -245,10 +252,11 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     this.setState({
       results: newResults,
       currentQuestionIndex: currentQuestionIndex + 1,
-      status: isFinished ? GameStatus.FINISHED : GameStatus.PLAYING,
+      status: isFinished ? GameStatus.CALCULATING_SCORE : GameStatus.PLAYING,
       shouldShowOptions: false,
       shouldShowHint: false,
       currentPosterPosition: undefined,
+      score: result.isCorrect ? score + POINTS_PER_QUESTION : score,
     });
   }
 
@@ -455,9 +463,26 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     this.timeLeft = timeLeft;
   }
 
-  finishGame = () => {
+  updateScore = (timeLeft: number) => {
     annyang.abort();
 
+    const { score } = this.state;
+
+    this.setState({
+      score: score + POINTS_PER_SECOND,
+    }, () => {
+      if (timeLeft > 1) {
+        this.timeLeft--;
+
+        setTimeout(this.updateScore, 200);
+        return;
+      }
+
+      setTimeout(this.finishGame, 3000);
+    })
+  }
+
+  finishGame = () => {
     const { questionnaire } = this.props;
     const { results } = this.state;
 
@@ -656,7 +681,16 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       };
     }
 
-    const { results } = this.state;
+    const { results, score } = this.state;
+
+    if (status === GameStatus.CALCULATING_SCORE) {
+      return (
+        <>
+          <h2>Good job!</h2>
+          <h2>{score}</h2>
+        </>
+      );
+    }
 
     if (status === GameStatus.FINISHED) {
       return (
@@ -688,9 +722,10 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
               <div className="pure-u-1-4">
                 <div className="container">
                   <Timer
-                    time={GAME_TIME}
+                    time={10}
+                    // time={GAME_TIME}
                     onTick={this.updateTimeLeft}
-                    onTimeUp={this.finishGame}
+                    onTimeUp={() => this.updateScore(this.timeLeft)}
                     timeRunningOutClassesThreshold={5}
                     timeRunningOutClasses='text-red text-bold'
                   />
