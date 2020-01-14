@@ -433,11 +433,11 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     }
 
     return (
-      <>
+      <div className="Container u-textCenter">
         <h1 className="h3 u-mT-lg u-textCenter">Guess the Movie!</h1>
         <hr />
-        <Notification>{message}</Notification>
-      </>
+        <Notification classes="u-mT-lg">{message}</Notification>
+      </div>
     );
   }
 
