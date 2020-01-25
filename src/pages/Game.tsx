@@ -19,6 +19,7 @@ import { AnswerList, Answer } from '../components/game/AnswerList';
 import { Feedback } from '../components/game/Feedback';
 import { Notification } from '../components/Notification';
 import { generateRandomNumberFromRange } from '../tools/util';
+import { formatForAnnyang } from '../tools/game';
 
 interface OwnProps {}
 
@@ -54,14 +55,19 @@ interface DispatchProps {
 
 type Props = StateProps & DispatchProps & OwnProps;
 
+export interface Command {
+  phrases: string[];
+  callback: () => void;
+}
+
 interface AnnyangOptions {
   autorestart: boolean;
   continuous: boolean;
   paused: boolean;
 }
 
-interface AnnyangCommands {
-  [keyof: string]: () => {}
+export interface AnnyangCommands {
+  [keyof: string]: () => void;
 }
 
 interface Annyang {
@@ -130,7 +136,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       return;
     }
 
-    const COMMANDS: { [keyof: string]: any } = {
+    const COMMANDS: { [keyof: string]: Command } = {
       PASS: {
         phrases: ['pass', 'next', 'don\'t know'],
         callback: this.handlePass,
@@ -145,15 +151,7 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       },
     };
 
-    const annyangFormattedCommands: { [keyof: string]: any } = {};
-
-    Object.keys(COMMANDS).forEach((commandKey: any) => {
-      const { phrases } = COMMANDS[commandKey];
-
-      phrases.forEach((phrase: string) => {
-        annyangFormattedCommands[phrase] = COMMANDS[commandKey].callback;
-      });
-    });
+    const annyangFormattedCommands = formatForAnnyang(COMMANDS);
 
     annyang.addCommands(annyangFormattedCommands);
 

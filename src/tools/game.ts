@@ -1,12 +1,15 @@
-export const detectCommand = (commandList: string[], transcripts: string[]) => {
-  console.log('transcripts at detectCommand: ', transcripts);
-  const mentionedCommand = commandList.find((command: string) => {
-    const commandFound = transcripts.indexOf(command) !== -1;
+import { AnnyangCommands, Command } from "../pages/Game";
 
-    console.log('commandFound: ', commandFound)
+export const formatForAnnyang = (commands: { [keyof: string]: Command }) => {
+  const annyangFormattedCommands: AnnyangCommands = {};
 
-    return commandFound;
+  Object.keys(commands).forEach((commandKey: any) => {
+    const { phrases } = commands[commandKey];
+
+    phrases.forEach((phrase: string) => {
+      annyangFormattedCommands[phrase] = commands[commandKey].callback;
+    });
   });
 
-  return !!mentionedCommand;
+  return annyangFormattedCommands;
 }
