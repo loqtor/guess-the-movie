@@ -7,6 +7,8 @@ import { createStore, applyMiddleware } from 'redux'
 import createSagaMiddleware from 'redux-saga'
 import { Provider } from 'react-redux'
 
+import { VoiceCommandRecognizer } from 'voice-command-recognizer';
+
 import { RootReducer } from "./store/reducers";
 
 import * as serviceWorker from './serviceWorker';
@@ -33,12 +35,22 @@ if (REACT_APP_GOOGLE_ANALYTICS_ID) {
 ReactDOM.render(
   <Provider store={store}>
     <Router>
+      <VoiceCommandRecognizer
+        startVoiceRecognition={true}
+        commands={[
+          {
+            phrases: ['Testing'],
+            callback: () => alert('Test works'),
+          }
+        ]}
+      >
         <div className="App">
           <Switch>
             <Route exact path="/" component={Home} />
             <Route path="/game" component={Game} />
           </Switch>
-      </div>
+        </div>
+      </VoiceCommandRecognizer>
     </Router>
   </Provider>
   , document.getElementById('root'));
