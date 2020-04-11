@@ -10,7 +10,7 @@ export const makeRequest = (url: string, options: any) => {
     ...options,
   };
 
-  const request = new Request(url, finalOptions)
+  const request = new Request(url, finalOptions);
   return fetch(request)
     .then((res) => res.json());
 }
