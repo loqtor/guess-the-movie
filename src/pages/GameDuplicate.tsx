@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ReactGA from 'react-ga';
-import { Dispatch } from 'redux';
-import { connect, useSelector, useDispatch } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import FuzzySet from 'fuzzyset.js';
 
 import { isLoadingMovies, getQuestionnaire, Question } from '../store/selectors/movies';
@@ -124,7 +123,125 @@ export const GameRefactor = () => {
   const [hint, setHint] = useState<string>('');
   const [shouldShowHint, setShouldShowHint] = useState<boolean>(false);
   const [shouldShowOptions, setShouldShowOptions] = useState<boolean>(false);
+  const [fuzzy, setFuzzy] = useState<any>();
   const [error, setError] = useState<any>(!annyang ? GameError.UNSUPPORTED : null);
+
+  const getFuzzyMatch = (results: string[]) => {
+    if (!results || !results.length) {
+      return false;
+    }
+
+    let fuzzyMatch: [number, string] = [0, ''];
+    const { title: currentMovieTitle } = questionnaire[currentQuestionIndex].movie;
+    const fuzzyMatchingResult = results.find((result: string) => {
+      const matches = fuzzy?.get(result);
+
+      if (!matches) {
+        return false;
+      }
+
+      const currentMovieMatch = matches.find((match: [number, string]) => currentMovieTitle === match[1]);
+      const isItAFuzzyMatch = currentMovieMatch && currentMovieMatch[0] >= FUZZY_MATCH_THRESHOLD;
+
+      if (isItAFuzzyMatch) {
+        fuzzyMatch = currentMovieMatch;
+      }
+
+      return isItAFuzzyMatch;
+    });
+
+    if (!fuzzyMatchingResult) {
+      return;
+    }
+
+    /**
+     * SR at times returns the results with a starting space.
+     * This ensures is just the words the user said that are taken into account.
+     */
+    return {
+      result: fuzzyMatchingResult.trim(),
+      match: fuzzyMatch,
+    };
+  }
+
+  const handleNoMatch = (results?: any) => {
+    /**
+     * This is to prevent that user's voice gets picked up after he's answered the last
+     * question. This prevents random audio being taken and the game attempting to go
+     * to the next question when there's not one.
+     */
+    if (status !== GameStatus.PLAYING) {
+      return;
+    }
+
+    const fuzzyMatch = getFuzzyMatch(results);
+
+    /**
+     * This makes the game a bit more forgiving on what comes to full movie titles or accents not being fully understandable by SR.
+     * If the actual movie title matches in a MATCH_THRESHOLD percentage with what the user says, then the guess is considered correct.
+     */
+    if (fuzzyMatch) {
+      const { match } = fuzzyMatch;
+
+      if (match && match.length && match[0] >= MATCH_THRESHOLD) {
+        // handleMatch();
+        console.log('We would handle the match here.');
+        return;
+      }
+
+      if (!shouldShowHint) {
+        // showHint();
+        console.log('We would show the hint here.');
+        return;
+      }
+    }
+
+    const currentMovie = questionnaire[currentQuestionIndex].movie;
+    const result: Result = {
+      isCorrect: false,
+      spokenAnswer: [results],
+      movie: currentMovie,
+    }
+
+    ReactGA.event({
+      category: 'Playing events',
+      action: 'Incorrect guess',
+      label: currentMovie.title,
+    });
+
+    resumeGame(result);
+  }
+
+  const handleMatch = () => {
+    const currentMovie = questionnaire[currentQuestionIndex].movie;
+    const result: Result = {
+      isCorrect: true,
+      spokenAnswer: [currentMovie.title],
+      movie: currentMovie,
+    }
+
+    ReactGA.event({
+      category: 'Playing events',
+      action: 'Correct guess',
+      label: currentMovie.title,
+    });
+
+    resumeGame(result);
+  }
+
+  const resumeGame = (result: Result) => {
+    const newResult = { [result.movie.id]: result };
+    const newResults = {...results, ...newResult};
+    const nextIndex = currentQuestionIndex + 1;
+    const isFinished = nextIndex >= questionnaire.length;
+
+    setResults(newResults);
+    setCurrentQuestionIndex(currentQuestionIndex  + 1);
+    setStatus(isFinished ? GameStatus.FINISHED : GameStatus.PLAYING);
+    setShouldShowOptions(false);
+    setShouldShowHint(false);
+    setCurrentPosterPosition(null);
+  }
 
   useEffect(() => {
     if (status === GameStatus.STARTING) {
@@ -132,14 +249,14 @@ export const GameRefactor = () => {
     }
 
     if (status === GameStatus.PLAYING) {
-      const COMMANDS: { [keyof: string]: Command } = {
+      const COMMANDS : { [keyof: string]: Command }  = {
         PASS: {
           phrases: ['pass', 'next', 'don\'t know'],
-          callback: () => console.log('It\'s passing'),
+          callback: handleNoMatch,
         },
         CURSE: {
           phrases: ['fuck', 'shit', 'motherfucker'],
-          callback: () => console.log('It\'s cursing'),
+          callback: () => console.log('Mate, watch your mouth!'),
         },
         OPTIONS: {
           phrases: ['show options'],
@@ -155,8 +272,36 @@ export const GameRefactor = () => {
       annyang.addCallback('errorPermissionBlocked', () => console.log('handling permission bloked'));
       annyang.addCallback('errorPermissionDenied', () => console.log('handling permission denied'));
       annyang.addCallback('resultNoMatch', () => console.log('handling result not match'));
+
+      annyang.start();
+
+      if (!fuzzy) {
+        const titles = questionnaire.map((question: Question) => question.movie.title)
+        setFuzzy(FuzzySet(titles));
+      }
     }
-  }, [status, dispatch]);
+  }, [status, dispatch, handleNoMatch, fuzzy, questionnaire]);
+
+  useEffect(() => {
+    if (status === GameStatus.PLAYING && !annyang.isListening) {
+      annyang.start();
+    }
+  }, [status]);
+
+  useEffect(() => {
+    if (!questionnaire.length) {
+      return;
+    }
+
+    const { title: currentMovieTitle } = questionnaire[currentQuestionIndex].movie;
+
+    annyang.addCommands({ [currentMovieTitle.toLocaleLowerCase()]: handleMatch } as AnnyangCommands);
+
+    if (currentQuestionIndex >= 1) {
+      const { title: previousMovieTitle } = questionnaire[currentQuestionIndex].movie;
+      annyang.removeCommands(previousMovieTitle);
+    }
+  }, [currentQuestionIndex, handleMatch, questionnaire]);
 
   const renderError = () => {
     let message = [
