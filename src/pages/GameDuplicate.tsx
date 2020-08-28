@@ -303,6 +303,38 @@ export const GameRefactor = () => {
     });
   }, [shouldShowHint]);
 
+  const handleStart = useCallback(() => {
+    /**
+     * Since we attempt to restart annyang when it might be no longer listening
+     * (because of SR things) `onStart` event could be triggered again and make the
+     * countdown appear halfway through the game.
+     * This is to avoid that problem, if the user is already playing, then this event
+     * does nothing.
+     */
+    setStatus(GameStatus.STARTING);
+    annyang.removeCallback('start');
+  }, []);
+
+  const handlePermissionBlocked = useCallback(() => {
+    ReactGA.event({
+      category: 'Error',
+      action: 'Permission to access microphone blocked by browser.',
+    });
+
+    setStatus(GameStatus.FAILED);
+    setError(GameError.BROWSER_DENIAL);
+  }, [])
+
+  const handlePermissionDenied = () => {
+    ReactGA.event({
+      category: 'Error',
+      action: 'Permission to access microphone blocked by user.',
+    });
+
+    setStatus(GameStatus.FAILED);
+    setError(GameError.USER_DENIAL);
+  }
+
   useEffect(() => {
     if (status === GameStatus.STARTING) {
       dispatch(getMoviesAction());
@@ -328,10 +360,10 @@ export const GameRefactor = () => {
     
       annyang.addCommands(annyangFormattedCommands);
     
-      annyang.addCallback('start', () => console.log('handling start'));
-      annyang.addCallback('errorPermissionBlocked', () => console.log('handling permission bloked'));
-      annyang.addCallback('errorPermissionDenied', () => console.log('handling permission denied'));
-      annyang.addCallback('resultNoMatch', () => console.log('handling result not match'));
+      annyang.addCallback('start', () => handleStart);
+      annyang.addCallback('errorPermissionBlocked', handlePermissionBlocked);
+      annyang.addCallback('errorPermissionDenied', handlePermissionDenied);
+      annyang.addCallback('resultNoMatch', handleNoMatch);
 
       annyang.start();
 
@@ -340,7 +372,7 @@ export const GameRefactor = () => {
         setFuzzy(FuzzySet(titles));
       }
     }
-  }, [status, dispatch, handleNoMatch, fuzzy, questionnaire, handleShowOptions]);
+  }, [status, dispatch, handleNoMatch, fuzzy, questionnaire, handleShowOptions, handlePermissionBlocked, handleStart]);
 
   useEffect(() => {
     if (status === GameStatus.PLAYING && !annyang.isListening) {
