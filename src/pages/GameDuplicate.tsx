@@ -19,39 +19,12 @@ import { Notification } from '../components/Notification';
 import { generateRandomNumberFromRange } from '../tools/util';
 import { formatForAnnyang } from '../tools/game';
 
-interface OwnProps {}
-
 export interface Result {
   movie: Movie;
   answer?: Answer;
   spokenAnswer?: string[];
   isCorrect: boolean;
 }
-
-interface OwnStateProps {
-  currentPosterPosition?: ImagePosition;
-  currentQuestionIndex: number;
-  error?: GameError;
-  hint?: string;
-  results: {
-    [keyof: string]: Result,
-  };
-  shouldShowHint: boolean;
-  shouldShowOptions: boolean;
-  status: GameStatus;
-
-}
-
-interface StateProps {
-  questionnaire: Question[];
-  isLoadingMovies: boolean;
-}
-
-interface DispatchProps {
-  getMovies: () => void;
-}
-
-type Props = StateProps & DispatchProps & OwnProps;
 
 export interface Command {
   phrases: string[];
@@ -80,30 +53,6 @@ interface Annyang {
 
 declare var annyang: Annyang;
 
-const BASE_STATE = {
-  status: GameStatus.AUTHORIZING,
-  currentQuestionIndex: 0,
-  results: {},
-  shouldShowHint: false,
-  shouldShowOptions: false
-}
-
-const INITIAL_STATE = {
-  ...BASE_STATE,
-};
-
-const UNSUPPORTED_STATE = {
-  ...BASE_STATE,
-  status: GameStatus.FAILED,
-  error: GameError.UNSUPPORTED,
-};
-
-const RESET_STATE = {
-  ...BASE_STATE,
-  status: GameStatus.STARTING,
-};
-
-
 const COUNTDOWN_TIME = 3; // seconds
 const FUZZY_MATCH_THRESHOLD = 0.2; // Percentage of coincidence between result and what the movie title is.
 const MATCH_THRESHOLD = 0.8;
@@ -119,12 +68,12 @@ export const GameRefactor = () => {
   const [status, setStatus] = useState<GameStatus>(!annyang ? GameStatus.FAILED : GameStatus.AUTHORIZING);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
   const [currentPosterPosition, setCurrentPosterPosition] = useState<any>(null);
-  const [results, setResults] = useState<any>({});
+  const [results, setResults] = useState<{[keyof: string]: Result}>({});
   const [hint, setHint] = useState<string>('');
   const [shouldShowHint, setShouldShowHint] = useState<boolean>(false);
   const [shouldShowOptions, setShouldShowOptions] = useState<boolean>(false);
   const [fuzzy, setFuzzy] = useState<any>();
-  const [error, setError] = useState<any>(!annyang ? GameError.UNSUPPORTED : null);
+  const [error, setError] = useState<GameError | null>(!annyang ? GameError.UNSUPPORTED : null);
 
   const createHint = useCallback(() => {
     const currentQuestion = questionnaire[currentQuestionIndex];
