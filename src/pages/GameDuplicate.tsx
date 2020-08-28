@@ -165,7 +165,24 @@ export const GameRefactor = () => {
     setShouldShowOptions(false);
     setShouldShowHint(false);
     setCurrentPosterPosition(null);
-  }, [currentQuestionIndex, questionnaire.length, results])
+  }, [currentQuestionIndex, questionnaire.length, results]);
+
+  const handleMatch = useCallback(() => {
+    const currentMovie = questionnaire[currentQuestionIndex].movie;
+    const result: Result = {
+      isCorrect: true,
+      spokenAnswer: [currentMovie.title],
+      movie: currentMovie,
+    }
+
+    ReactGA.event({
+      category: 'Playing events',
+      action: 'Correct guess',
+      label: currentMovie.title,
+    });
+
+    resumeGame(result);
+  }, [currentQuestionIndex, questionnaire, resumeGame]);
 
   const getFuzzyMatch = useCallback((results: string[]) => {
     if (!results || !results.length) {
@@ -252,22 +269,39 @@ export const GameRefactor = () => {
     resumeGame(result);
   }, [status, getFuzzyMatch, questionnaire, currentQuestionIndex, resumeGame, shouldShowHint, handleMatch, createHint]);
 
-  const handleMatch = useCallback(() => {
-    const currentMovie = questionnaire[currentQuestionIndex].movie;
-    const result: Result = {
-      isCorrect: true,
-      spokenAnswer: [currentMovie.title],
-      movie: currentMovie,
-    }
+  const onSelect = useCallback((answer: Answer) => {
+    const currentQuestion = questionnaire[currentQuestionIndex];
+    const isCorrect = answer.id === currentQuestion.movie.id;
+    const result : Result = {
+      isCorrect,
+      answer,
+      movie: currentQuestion.movie,
+    };
 
     ReactGA.event({
       category: 'Playing events',
-      action: 'Correct guess',
-      label: currentMovie.title,
+      action: 'Option selection',
+      label: `${currentQuestion.movie.title}, user selected ${answer.label}`,
     });
 
     resumeGame(result);
   }, [currentQuestionIndex, questionnaire, resumeGame]);
+
+  const handleShowOptions = useCallback(() => {
+    /**
+     * If the hint is being displayed, the user cannot see the options.
+     */
+    if (shouldShowHint) {
+      return;
+    }
+
+    setShouldShowOptions(true);
+
+    ReactGA.event({
+      category: 'Playing events',
+      action: 'Show options',
+    });
+  }, [shouldShowHint]);
 
   useEffect(() => {
     if (status === GameStatus.STARTING) {
@@ -286,7 +320,7 @@ export const GameRefactor = () => {
         },
         OPTIONS: {
           phrases: ['show options'],
-          callback: () => console.log('It\'s showing options'),
+          callback: handleShowOptions,
         },
       };
     
@@ -306,7 +340,7 @@ export const GameRefactor = () => {
         setFuzzy(FuzzySet(titles));
       }
     }
-  }, [status, dispatch, handleNoMatch, fuzzy, questionnaire]);
+  }, [status, dispatch, handleNoMatch, fuzzy, questionnaire, handleShowOptions]);
 
   useEffect(() => {
     if (status === GameStatus.PLAYING && !annyang.isListening) {
@@ -434,7 +468,7 @@ export const GameRefactor = () => {
   const currentQuestion = questionnaire[currentQuestionIndex];
   let photoCropperProps: any = {
     expectedImageWidth: IMAGE_WIDTH,
-    onMounted: () => console.log('Photo cropper has mounted'),
+    onMounted: (currentPosterPosition: ImagePosition) => setCurrentPosterPosition(currentPosterPosition),
   };
 
   /**
@@ -523,7 +557,7 @@ export const GameRefactor = () => {
       {shouldShowOptions && (
         <AnswerList
           answers={currentQuestion.answers}
-          onSelect={() => console.log('The answer would be selected here')}
+          onSelect={onSelect}
         />
       )}
     </div>
