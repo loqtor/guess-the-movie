@@ -115,7 +115,6 @@ const HINT_REPLACEABLE_CHARACTERS = /^[a-zA-Z0-9]+$/; // Only Alphanumeric chara
 
 class GameComponent extends React.Component<Props, OwnStateProps> {
   fuzzy: any;
-  timeLeft: number = GAME_TIME;
 
   constructor(props: Props) {
     super(props);
