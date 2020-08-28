@@ -335,6 +335,14 @@ export const GameRefactor = () => {
     setError(GameError.USER_DENIAL);
   }
 
+  const resetGame = () => {
+    setCurrentQuestionIndex(0);
+    setStatus(GameStatus.STARTING);
+    setResults({});
+    setShouldShowHint(false);
+    setShouldShowOptions(false);
+  }
+
   useEffect(() => {
     if (status === GameStatus.STARTING) {
       dispatch(getMoviesAction());
@@ -394,6 +402,32 @@ export const GameRefactor = () => {
       annyang.removeCommands(previousMovieTitle);
     }
   }, [currentQuestionIndex, handleMatch, questionnaire]);
+
+  const finishGame = () => {
+    annyang.abort();
+    
+    /**
+     * Ensures that there's an answer for every question.
+     */
+    if (Object.keys(results).length < questionnaire.length) {
+      questionnaire.forEach(({ movie } : { movie: Movie }) => {
+        if (!results[movie.id]) {
+          results[movie.id] = {
+            isCorrect: false,
+            movie,
+          } as Result;
+        }
+      });
+    }
+
+    setResults(results);
+    setStatus(GameStatus.FINISHED);
+    
+    ReactGA.event({
+      category: 'App events',
+      action: 'Game finished',
+    });
+  }
 
   const renderError = () => {
     let message = [
@@ -492,7 +526,7 @@ export const GameRefactor = () => {
           currentQuestionIndex={currentQuestionIndex}
           results={results}
         />
-        <button className="Button Button--primary u-textCenter" onClick={() => console.log('The game would reset here.')}>Try again!</button>
+        <button className="Button Button--primary u-textCenter" onClick={resetGame}>Try again!</button>
       </div>
     );
   }
@@ -532,7 +566,7 @@ export const GameRefactor = () => {
           <Timer
             classes="h5 u-mB-0"
             time={GAME_TIME}
-            onTimeUp={() => console.log('The game would finish here')}
+            onTimeUp={finishGame}
             timeRunningOutClassesThreshold={10}
             timeRunningOutClasses='u-textError u-textFlash u-textBold'
           />
