@@ -450,10 +450,6 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     });
   }
 
-  updateTimeLeft = (timeLeft: number) => {
-    this.timeLeft = timeLeft;
-  }
-
   finishGame = () => {
     annyang.abort();
 
