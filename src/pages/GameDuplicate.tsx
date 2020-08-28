@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import ReactGA from 'react-ga';
 import { useSelector, useDispatch } from 'react-redux';
 import FuzzySet from 'fuzzyset.js';
@@ -126,7 +126,48 @@ export const GameRefactor = () => {
   const [fuzzy, setFuzzy] = useState<any>();
   const [error, setError] = useState<any>(!annyang ? GameError.UNSUPPORTED : null);
 
-  const getFuzzyMatch = (results: string[]) => {
+  const createHint = useCallback(() => {
+    const currentQuestion = questionnaire[currentQuestionIndex];
+    const { title: currentMovieTitle } = currentQuestion.movie;
+    const currentMovieTitleAsArray = currentMovieTitle.split('');
+    const totalLettersToReplace = Math.ceil(currentMovieTitle.length * HINT_PERCENT_TO_REPLACE / 100);
+    const lettersIndexesReplaced: number[] = [];
+
+
+    for (let i = 0; i < totalLettersToReplace; i++) {
+      let letterIndexToReplace = generateRandomNumberFromRange(currentMovieTitle.length - 1, 0);
+      let characterToReplace = currentMovieTitle.charAt(letterIndexToReplace);
+
+      /**
+       * To ensure that the same character is not attempted to be replaced twice, the right amount of letters are replaced
+       * and only HINT_REPLACEABLE_CHARACTERS are being replaced with the HINT_CHARATER
+       */
+      while (lettersIndexesReplaced.indexOf(letterIndexToReplace) !== -1 || !HINT_REPLACEABLE_CHARACTERS.test(characterToReplace)) {
+        letterIndexToReplace = generateRandomNumberFromRange(currentMovieTitle.length - 1, 0);
+        characterToReplace = currentMovieTitle.charAt(letterIndexToReplace);
+      }
+
+      currentMovieTitleAsArray[letterIndexToReplace] = HINT_CHARACTER;
+    }
+
+    return `${currentMovieTitleAsArray.join('')}`;
+  }, [currentQuestionIndex, questionnaire]);
+
+  const resumeGame = useCallback((result: Result) => {
+    const newResult = { [result.movie.id]: result };
+    const newResults = {...results, ...newResult};
+    const nextIndex = currentQuestionIndex + 1;
+    const isFinished = nextIndex >= questionnaire.length;
+
+    setResults(newResults);
+    setCurrentQuestionIndex(currentQuestionIndex  + 1);
+    setStatus(isFinished ? GameStatus.FINISHED : GameStatus.PLAYING);
+    setShouldShowOptions(false);
+    setShouldShowHint(false);
+    setCurrentPosterPosition(null);
+  }, [currentQuestionIndex, questionnaire.length, results])
+
+  const getFuzzyMatch = useCallback((results: string[]) => {
     if (!results || !results.length) {
       return false;
     }
@@ -162,9 +203,9 @@ export const GameRefactor = () => {
       result: fuzzyMatchingResult.trim(),
       match: fuzzyMatch,
     };
-  }
+  }, [currentQuestionIndex, fuzzy, questionnaire]);
 
-  const handleNoMatch = (results?: any) => {
+  const handleNoMatch = useCallback((results?: any) => {
     /**
      * This is to prevent that user's voice gets picked up after he's answered the last
      * question. This prevents random audio being taken and the game attempting to go
@@ -184,14 +225,13 @@ export const GameRefactor = () => {
       const { match } = fuzzyMatch;
 
       if (match && match.length && match[0] >= MATCH_THRESHOLD) {
-        // handleMatch();
-        console.log('We would handle the match here.');
+        handleMatch();
         return;
       }
 
       if (!shouldShowHint) {
-        // showHint();
-        console.log('We would show the hint here.');
+        setHint(createHint());
+        setShouldShowHint(true);
         return;
       }
     }
@@ -210,9 +250,9 @@ export const GameRefactor = () => {
     });
 
     resumeGame(result);
-  }
+  }, [status, getFuzzyMatch, questionnaire, currentQuestionIndex, resumeGame, shouldShowHint, handleMatch, createHint]);
 
-  const handleMatch = () => {
+  const handleMatch = useCallback(() => {
     const currentMovie = questionnaire[currentQuestionIndex].movie;
     const result: Result = {
       isCorrect: true,
@@ -227,21 +267,7 @@ export const GameRefactor = () => {
     });
 
     resumeGame(result);
-  }
-
-  const resumeGame = (result: Result) => {
-    const newResult = { [result.movie.id]: result };
-    const newResults = {...results, ...newResult};
-    const nextIndex = currentQuestionIndex + 1;
-    const isFinished = nextIndex >= questionnaire.length;
-
-    setResults(newResults);
-    setCurrentQuestionIndex(currentQuestionIndex  + 1);
-    setStatus(isFinished ? GameStatus.FINISHED : GameStatus.PLAYING);
-    setShouldShowOptions(false);
-    setShouldShowHint(false);
-    setCurrentPosterPosition(null);
-  }
+  }, [currentQuestionIndex, questionnaire, resumeGame]);
 
   useEffect(() => {
     if (status === GameStatus.STARTING) {
