@@ -1,13 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import ReactGA from 'react-ga';
-import { Dispatch } from 'redux';
-import { connect } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import FuzzySet from 'fuzzyset.js';
 
 import { isLoadingMovies, getQuestionnaire, Question } from '../store/selectors/movies';
 import { getMovies as getMoviesAction } from '../store/actions/movies';
 
-import { RootState } from '../store/reducers';
 import { Movie } from '../store/reducers/movies';
 
 import { IMAGE_BASE_URL, IMAGE_WIDTH, GAME_TIME } from '../constants/config';
@@ -21,39 +19,12 @@ import { Notification } from '../components/Notification';
 import { generateRandomNumberFromRange } from '../tools/util';
 import { formatForAnnyang } from '../tools/game';
 
-interface OwnProps {}
-
 export interface Result {
   movie: Movie;
   answer?: Answer;
   spokenAnswer?: string[];
   isCorrect: boolean;
 }
-
-interface OwnStateProps {
-  currentPosterPosition?: ImagePosition;
-  currentQuestionIndex: number;
-  error?: GameError;
-  hint?: string;
-  results: {
-    [keyof: string]: Result,
-  };
-  shouldShowHint: boolean;
-  shouldShowOptions: boolean;
-  status: GameStatus;
-
-}
-
-interface StateProps {
-  questionnaire: Question[];
-  isLoadingMovies: boolean;
-}
-
-interface DispatchProps {
-  getMovies: () => void;
-}
-
-type Props = StateProps & DispatchProps & OwnProps;
 
 export interface Command {
   phrases: string[];
@@ -82,30 +53,6 @@ interface Annyang {
 
 declare var annyang: Annyang;
 
-const BASE_STATE = {
-  status: GameStatus.AUTHORIZING,
-  currentQuestionIndex: 0,
-  results: {},
-  shouldShowHint: false,
-  shouldShowOptions: false
-}
-
-const INITIAL_STATE = {
-  ...BASE_STATE,
-};
-
-const UNSUPPORTED_STATE = {
-  ...BASE_STATE,
-  status: GameStatus.FAILED,
-  error: GameError.UNSUPPORTED,
-};
-
-const RESET_STATE = {
-  ...BASE_STATE,
-  status: GameStatus.STARTING,
-};
-
-
 const COUNTDOWN_TIME = 3; // seconds
 const FUZZY_MATCH_THRESHOLD = 0.2; // Percentage of coincidence between result and what the movie title is.
 const MATCH_THRESHOLD = 0.8;
@@ -113,72 +60,100 @@ const HINT_PERCENT_TO_REPLACE = 20; // Percentage of the subtitle to be displaye
 const HINT_CHARACTER = '_';
 const HINT_REPLACEABLE_CHARACTERS = /^[a-zA-Z0-9]+$/; // Only Alphanumeric characters are to be replaced for hints.
 
-class GameComponent extends React.Component<Props, OwnStateProps> {
-  fuzzy: any;
+export const Game = () => {
+  const dispatch = useDispatch();
+  const questionnaire = useSelector(getQuestionnaire);
+  const isLoading = useSelector(isLoadingMovies);
 
-  constructor(props: Props) {
-    super(props);
-
-    /**
-     * When Speech Recognition is not supported Annyang is not initialised
-     * and just set to null. This prevents exceptions from happening in those browsers
-     * where SR is not supported.
-     */
+  const resolveStatus = () => {
     if (!annyang) {
-      this.state = UNSUPPORTED_STATE;
-
-      ReactGA.event({
-        category: 'Error',
-        action: 'SR is not supported in this browser.',
-      });
-
-      return;
+      return GameStatus.FAILED;
     }
 
-    const COMMANDS: { [keyof: string]: Command } = {
-      PASS: {
-        phrases: ['pass', 'next', 'don\'t know'],
-        callback: this.handlePass,
-      },
-      CURSE: {
-        phrases: ['fuck', 'shit', 'motherfucker'],
-        callback: this.handleCurse,
-      },
-      OPTIONS: {
-        phrases: ['show options'],
-        callback: this.handleOptionsRequest,
-      },
-    };
+    if (questionnaire && questionnaire.length) {
+      return GameStatus.PLAYING;
+    }
 
-    const annyangFormattedCommands = formatForAnnyang(COMMANDS);
+    return GameStatus.AUTHORIZING;
+  };
 
-    annyang.addCommands(annyangFormattedCommands);
+  const [status, setStatus] = useState<GameStatus>(resolveStatus());
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
+  const [currentPosterPosition, setCurrentPosterPosition] = useState<any>(null);
+  const [results, setResults] = useState<{[keyof: string]: Result}>({});
+  const [hint, setHint] = useState<string>('');
+  const [shouldShowHint, setShouldShowHint] = useState<boolean>(false);
+  const [shouldShowOptions, setShouldShowOptions] = useState<boolean>(false);
+  const [fuzzy, setFuzzy] = useState<any>();
+  const [error, setError] = useState<GameError | null>(!annyang ? GameError.UNSUPPORTED : null);
 
-    annyang.addCallback('start', this.handleStart);
-    annyang.addCallback('errorPermissionBlocked', this.handlePermissionBlocked);
-    annyang.addCallback('errorPermissionDenied', this.handlePermissionDenied);
-    annyang.addCallback('resultNoMatch', this.handleNoMatch);
+  const createHint = useCallback(() => {
+    const currentQuestion = questionnaire[currentQuestionIndex];
+    const { title: currentMovieTitle } = currentQuestion.movie;
+    const currentMovieTitleAsArray = currentMovieTitle.split('');
+    const totalLettersToReplace = Math.ceil(currentMovieTitle.length * HINT_PERCENT_TO_REPLACE / 100);
+    const lettersIndexesReplaced: number[] = [];
 
-    this.state = INITIAL_STATE;
-  }
 
-  saveImagePosition = (currentPosterPosition: ImagePosition) => {
-    this.setState({
-      currentPosterPosition,
+    for (let i = 0; i < totalLettersToReplace; i++) {
+      let letterIndexToReplace = generateRandomNumberFromRange(currentMovieTitle.length - 1, 0);
+      let characterToReplace = currentMovieTitle.charAt(letterIndexToReplace);
+
+      /**
+       * To ensure that the same character is not attempted to be replaced twice, the right amount of letters are replaced
+       * and only HINT_REPLACEABLE_CHARACTERS are being replaced with the HINT_CHARATER
+       */
+      while (lettersIndexesReplaced.indexOf(letterIndexToReplace) !== -1 || !HINT_REPLACEABLE_CHARACTERS.test(characterToReplace)) {
+        letterIndexToReplace = generateRandomNumberFromRange(currentMovieTitle.length - 1, 0);
+        characterToReplace = currentMovieTitle.charAt(letterIndexToReplace);
+      }
+
+      currentMovieTitleAsArray[letterIndexToReplace] = HINT_CHARACTER;
+    }
+
+    return `${currentMovieTitleAsArray.join('')}`;
+  }, [currentQuestionIndex, questionnaire]);
+
+  const resumeGame = useCallback((result: Result) => {
+    const newResult = { [result.movie.id]: result };
+    const newResults = {...results, ...newResult};
+    const nextIndex = currentQuestionIndex + 1;
+    const isFinished = nextIndex >= questionnaire.length;
+
+    setResults(newResults);
+    setCurrentQuestionIndex(currentQuestionIndex  + 1);
+    setStatus(isFinished ? GameStatus.FINISHED : GameStatus.PLAYING);
+    setShouldShowOptions(false);
+    setShouldShowHint(false);
+    setCurrentPosterPosition(null);
+  }, [currentQuestionIndex, questionnaire.length, results]);
+
+  const handleMatch = useCallback(() => {
+    const currentMovie = questionnaire[currentQuestionIndex].movie;
+    const result: Result = {
+      isCorrect: true,
+      spokenAnswer: [currentMovie.title],
+      movie: currentMovie,
+    }
+
+    ReactGA.event({
+      category: 'Playing events',
+      action: 'Correct guess',
+      label: currentMovie.title,
     });
-  }
 
-  getFuzzyMatch = (results: string[]) => {
+    resumeGame(result);
+  }, [currentQuestionIndex, questionnaire, resumeGame]);
+
+  const getFuzzyMatch = useCallback((results: string[]) => {
     if (!results || !results.length) {
       return false;
     }
 
     let fuzzyMatch: [number, string] = [0, ''];
-    const { currentQuestionIndex } = this.state;
-    const { questionnaire } = this.props;
     const { title: currentMovieTitle } = questionnaire[currentQuestionIndex].movie;
     const fuzzyMatchingResult = results.find((result: string) => {
-      const matches = this.fuzzy.get(result);
+      const matches = fuzzy?.get(result);
 
       if (!matches) {
         return false;
@@ -206,100 +181,19 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       result: fuzzyMatchingResult.trim(),
       match: fuzzyMatch,
     };
-  }
+  }, [currentQuestionIndex, fuzzy, questionnaire]);
 
-  /**
-   * This ensures that only the current movie title is accepted as a command.
-   * Removes the previous one and adds the current.
-   */
-  updateMoviesOnCommands = () => {
-    const { questionnaire } = this.props;
-
-    if (!questionnaire.length) {
-      return;
-    }
-
-    const { currentQuestionIndex } = this.state;
-    const { title: currentMovieTitle } = questionnaire[currentQuestionIndex].movie;
-
-    annyang.addCommands({ [currentMovieTitle.toLocaleLowerCase()]: this.handleMatch } as AnnyangCommands);
-
-    if (currentQuestionIndex >= 1) {
-      const { title: previousMovieTitle } = this.props.questionnaire[currentQuestionIndex].movie;
-      annyang.removeCommands(previousMovieTitle);
-    }
-  }
-
-  resumeGame = (result: Result) => {
-    const { questionnaire } = this.props;
-    const { currentQuestionIndex, results } = this.state;
-
-    const newResult = { [result.movie.id]: result };
-    const newResults = {...results, ...newResult};
-    const nextIndex = currentQuestionIndex + 1;
-    const isFinished = nextIndex >= questionnaire.length;
-
-    this.setState({
-      results: newResults,
-      currentQuestionIndex: currentQuestionIndex + 1,
-      status: isFinished ? GameStatus.FINISHED : GameStatus.PLAYING,
-      shouldShowOptions: false,
-      shouldShowHint: false,
-      currentPosterPosition: undefined,
-    });
-  }
-
-  handleStart = () => {
-    /**
-     * Since we attempt to restart annyang when it might be no longer listening
-     * (because of SR things) `onStart` event could be triggered again and make the
-     * countdown appear halfway through the game.
-     * This is to avoid that problem, if the user is already playing, then this event
-     * does nothing.
-     */
-    this.setState({
-      status: GameStatus.STARTING,
-    }, () => {
-      annyang.removeCallback('start');
-    });
-  }
-
-  handlePass = () => {
-    this.handleNoMatch();
-  }
-
-  handleCurse = () => {
-  }
-
-  handleOptionsRequest = () => {
-    /**
-     * If the hint is being displayed, the user cannot see the options.
-     */
-    if (this.state.shouldShowHint) {
-      return;
-    }
-
-    this.setState({
-      shouldShowOptions: true,
-    });
-
-    ReactGA.event({
-      category: 'Playing events',
-      action: 'Show options',
-    });
-  }
-
-  handleNoMatch = (results?: any) => {
+  const handleNoMatch = useCallback((results?: any) => {
     /**
      * This is to prevent that user's voice gets picked up after he's answered the last
      * question. This prevents random audio being taken and the game attempting to go
      * to the next question when there's not one.
      */
-    if (this.state.status !== GameStatus.PLAYING) {
+    if (status !== GameStatus.PLAYING) {
       return;
     }
 
-    const fuzzyMatch = this.getFuzzyMatch(results);
+    const fuzzyMatch = getFuzzyMatch(results);
 
     /**
      * This makes the game a bit more forgiving on what comes to full movie titles or accents not being fully understandable by SR.
@@ -309,18 +203,16 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       const { match } = fuzzyMatch;
 
       if (match && match.length && match[0] >= MATCH_THRESHOLD) {
-        this.handleMatch();
+        handleMatch();
         return;
       }
 
-      if (!this.state.shouldShowHint) {
-        this.showHint();
+      if (!shouldShowHint) {
+        setHint(createHint());
+        setShouldShowHint(true);
         return;
       }
     }
-
-    const { questionnaire } = this.props;
-    const { currentQuestionIndex } = this.state;
 
     const currentMovie = questionnaire[currentQuestionIndex].movie;
     const result: Result = {
@@ -335,31 +227,10 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       label: currentMovie.title,
     });
 
-    this.resumeGame(result);
-  }
+    resumeGame(result);
+  }, [status, getFuzzyMatch, questionnaire, currentQuestionIndex, resumeGame, shouldShowHint, handleMatch, createHint]);
 
-  handleMatch = () => {
-    const { currentQuestionIndex } = this.state;
-    const { questionnaire } = this.props;
-    const currentMovie = questionnaire[currentQuestionIndex].movie;
-    const result: Result = {
-      isCorrect: true,
-      spokenAnswer: [currentMovie.title],
-      movie: currentMovie,
-    }
-
-    ReactGA.event({
-      category: 'Playing events',
-      action: 'Correct guess',
-      label: currentMovie.title,
-    });
-
-    this.resumeGame(result);
-  }
-
-  onSelect = (answer: Answer) => {
-    const { currentQuestionIndex } = this.state;
-    const { questionnaire } = this.props;
+  const onSelect = useCallback((answer: Answer) => {
     const currentQuestion = questionnaire[currentQuestionIndex];
     const isCorrect = answer.id === currentQuestion.movie.id;
     const result : Result = {
@@ -374,36 +245,146 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
       label: `${currentQuestion.movie.title}, user selected ${answer.label}`,
     });
 
-    this.resumeGame(result);
-  }
+    resumeGame(result);
+  }, [currentQuestionIndex, questionnaire, resumeGame]);
 
-  handlePermissionBlocked = () => {
+  const handleShowOptions = useCallback(() => {
+    /**
+     * If the hint is being displayed, the user cannot see the options.
+     */
+    if (shouldShowHint) {
+      return;
+    }
+
+    setShouldShowOptions(true);
+
+    ReactGA.event({
+      category: 'Playing events',
+      action: 'Show options',
+    });
+  }, [shouldShowHint]);
+
+  const handleStart = useCallback(() => {
+    /**
+     * Since we attempt to restart annyang when it might be no longer listening
+     * (because of SR things) `onStart` event could be triggered again and make the
+     * countdown appear halfway through the game.
+     * This is to avoid that problem, if the user is already playing, then this event
+     * does nothing.
+     */
+    setStatus(GameStatus.STARTING);
+    annyang.removeCallback('start');
+  }, []);
+
+  const handlePermissionBlocked = useCallback(() => {
     ReactGA.event({
       category: 'Error',
       action: 'Permission to access microphone blocked by browser.',
     });
 
-    this.setState({
-      status: GameStatus.FAILED,
-      error: GameError.BROWSER_DENIAL
-    });
-  }
+    setStatus(GameStatus.FAILED);
+    setError(GameError.BROWSER_DENIAL);
+  }, [])
 
-  handlePermissionDenied = () => {
+  const handlePermissionDenied = useCallback(() => {
     ReactGA.event({
       category: 'Error',
       action: 'Permission to access microphone blocked by user.',
     });
 
-    this.setState({
-      status: GameStatus.FAILED,
-      error: GameError.USER_DENIAL,
+    setStatus(GameStatus.FAILED);
+    setError(GameError.USER_DENIAL);
+  }, []);
+
+  const resetGame = () => {
+    setCurrentQuestionIndex(0);
+    setStatus(GameStatus.STARTING);
+    setResults({});
+    setShouldShowHint(false);
+    setShouldShowOptions(false);
+  }
+
+  if (status === GameStatus.AUTHORIZING) {
+    const COMMANDS : { [keyof: string]: Command }  = {
+      PASS: {
+        phrases: ['pass', 'next', 'don\'t know'],
+        callback: handleNoMatch,
+      },
+      CURSE: {
+        phrases: ['fuck', 'shit', 'motherfucker'],
+        callback: () => console.log('Mate, watch your mouth!'),
+      },
+      OPTIONS: {
+        phrases: ['show options'],
+        callback: handleShowOptions,
+      },
+    };
+  
+    const annyangFormattedCommands = formatForAnnyang(COMMANDS);
+  
+    annyang.addCommands(annyangFormattedCommands);
+  
+    annyang.addCallback('start', handleStart);
+    annyang.addCallback('errorPermissionBlocked', handlePermissionBlocked);
+    annyang.addCallback('errorPermissionDenied', handlePermissionDenied);
+    annyang.addCallback('resultNoMatch', handleNoMatch);
+  
+    annyang.start();
+  
+    if (!fuzzy) {
+      const titles = questionnaire.map((question: Question) => question.movie.title)
+      setFuzzy(FuzzySet(titles));
+    }
+  }
+
+  useEffect(() => {
+    if (status === GameStatus.PLAYING && !annyang.isListening()) {
+      annyang.start();
+    }
+  }, [status]);
+
+  useEffect(() => {
+    if (!questionnaire.length) {
+      return;
+    }
+
+    const { title: currentMovieTitle } = questionnaire[currentQuestionIndex].movie;
+
+    annyang.addCommands({ [currentMovieTitle.toLocaleLowerCase()]: handleMatch } as AnnyangCommands);
+
+    if (currentQuestionIndex >= 1) {
+      const { title: previousMovieTitle } = questionnaire[currentQuestionIndex].movie;
+      annyang.removeCommands(previousMovieTitle);
+    }
+  }, [currentQuestionIndex, handleMatch, questionnaire]);
+
+  const finishGame = () => {
+    annyang.abort();
+    
+    /**
+     * Ensures that there's an answer for every question.
+     */
+    if (Object.keys(results).length < questionnaire.length) {
+      questionnaire.forEach(({ movie } : { movie: Movie }) => {
+        if (!results[movie.id]) {
+          results[movie.id] = {
+            isCorrect: false,
+            movie,
+          } as Result;
+        }
+      });
+    }
+
+    setResults(results);
+    setStatus(GameStatus.FINISHED);
+    
+    ReactGA.event({
+      category: 'App events',
+      action: 'Game finished',
     });
   }
 
-  renderError = () => {
-    const { error } = this.state;
-
+  const renderError = () => {
     let message = [
       <p>An unexpected error ocurred. As an alternative try the latest Chrome on desktop or Android.</p>,
     ];
@@ -438,327 +419,171 @@ class GameComponent extends React.Component<Props, OwnStateProps> {
     );
   }
 
-  startGame = () => {
-    this.setState({
-      status: GameStatus.PLAYING,
-    }, () => {
-      ReactGA.event({
-        category: 'App events',
-        action: 'Game started',
-      });
-    });
+  if (status === GameStatus.FAILED) {
+    renderError();
   }
 
-  finishGame = () => {
-    annyang.abort();
-
-    const { questionnaire } = this.props;
-    const { results } = this.state;
-
-    /**
-     * Ensures that there's an answer for every question.
-     */
-    if (Object.keys(results).length < questionnaire.length) {
-      questionnaire.forEach(({ movie } : { movie: Movie }) => {
-        if (!results[movie.id]) {
-          results[movie.id] = {
-            isCorrect: false,
-            movie,
-          } as Result;
-        }
-      });
-    }
-
-    this.setState({
-      status: GameStatus.FINISHED,
-      results,
-    }, () => {
-      ReactGA.event({
-        category: 'App events',
-        action: 'Game finished',
-      });
-    });
-  }
-
-  createHint = () => {
-    const { currentQuestionIndex } = this.state;
-    const { questionnaire } = this.props;
-    const currentQuestion = questionnaire[currentQuestionIndex];
-    const { title: currentMovieTitle } = currentQuestion.movie;
-    const currentMovieTitleAsArray = currentMovieTitle.split('');
-    const totalLettersToReplace = Math.ceil(currentMovieTitle.length * HINT_PERCENT_TO_REPLACE / 100);
-    const lettersIndexesReplaced: number[] = [];
-
-
-    for (let i = 0; i < totalLettersToReplace; i++) {
-      let letterIndexToReplace = generateRandomNumberFromRange(currentMovieTitle.length - 1, 0);
-      let characterToReplace = currentMovieTitle.charAt(letterIndexToReplace);
-
-      /**
-       * To ensure that the same character is not attempted to be replaced twice, the right amount of letters are replaced
-       * and only HINT_REPLACEABLE_CHARACTERS are being replaced with the HINT_CHARATER
-       */
-      while (lettersIndexesReplaced.indexOf(letterIndexToReplace) !== -1 || !HINT_REPLACEABLE_CHARACTERS.test(characterToReplace)) {
-        letterIndexToReplace = generateRandomNumberFromRange(currentMovieTitle.length - 1, 0);
-        characterToReplace = currentMovieTitle.charAt(letterIndexToReplace);
-      }
-
-      currentMovieTitleAsArray[letterIndexToReplace] = HINT_CHARACTER;
-    }
-
-    return `${currentMovieTitleAsArray.join('')}`;
-  }
-
-  showHint = () => {
-    const hint = this.createHint();
-
-    this.setState({
-      shouldShowHint: true,
-      shouldShowOptions: false,
-      hint,
-    });
-  }
-
-
-  reset = () => {
-    const { getMovies } = this.props;
-
-    getMovies();
-
-    ReactGA.event({
-      category: 'App events',
-      action: 'Try again',
-    });
-
-    this.setState(RESET_STATE);
-  }
-
-  componentDidUpdate() {
-    const { questionnaire } = this.props;
-    const { currentQuestionIndex, status } = this.state;
-
-    if (currentQuestionIndex === 0 && questionnaire.length > 0) {
-      const titles = questionnaire.map((question: Question) => question.movie.title)
-      this.fuzzy = FuzzySet(titles);
-    }
-
-    if (status === GameStatus.STARTING || !annyang.isListening()) {
-      annyang.start();
-    }
-
-    if (status !== GameStatus.PLAYING) {
-      return;
-    }
-
-    if (questionnaire.length > currentQuestionIndex) {
-      this.updateMoviesOnCommands();
-    }
-  }
-
-  componentDidMount() {
-    const { status } = this.state;
-
-    /**
-     * No need to fetch movies in this case.
-     */
-    if (status === GameStatus.FAILED) {
-      return;
-    }
-
-    const { getMovies } = this.props;
-
-    getMovies();
-  }
-
-  render() {
-    const { status } = this.state;
-
-    if (status === GameStatus.FAILED) {
-      return this.renderError();
-    }
-
-    if (status === GameStatus.AUTHORIZING) {
-      return (
-        <div className="Container u-textCenter">
-          <h1 className="h3 u-mT-lg u-textCenter">Guess the Movie!</h1>
-          <hr />
-          <Notification>
-            <h4 className="u-mT-lg">This game uses Speech Recognition for playing.</h4>
-            <p>Please allow the microphone to be used on this page to start the game.</p>
-          </Notification>
-        </div>
-      );
-    }
-
-    if (status === GameStatus.STARTING) {
-      return (
-        <div className="Container u-textCenter">
-          <h1 className="h3 u-mT-lg u-textCenter">Guess the Movie!</h1>
-          <hr />
-          <Notification>
-            <h4 className="u-mT-lg">Get Ready!</h4>
-            <Timer
-              time={COUNTDOWN_TIME}
-              onTimeUp={this.startGame}
-              unformatted={true}
-              classes="h1 u-mB-0 u-textSuccess"
-              />
-          </Notification>
-        </div>
-      )
-    }
-
-    const { isLoadingMovies } = this.props;
-
-    if (isLoadingMovies) {
-      return (
+  if (status === GameStatus.AUTHORIZING) {
+    return (
+      <div className="Container u-textCenter">
+        <h1 className="h3 u-mT-lg u-textCenter">Guess the Movie!</h1>
+        <hr />
         <Notification>
-          <p>Loading...</p>
+          <h4 className="u-mT-lg">This game uses Speech Recognition for playing.</h4>
+          <p>Please allow the microphone to be used on this page to start the game.</p>
         </Notification>
-      )
-    }
+      </div>
+    );
+  }
 
-    const { questionnaire } = this.props;
-
-    if (!questionnaire.length) {
-      return (
+  if (status === GameStatus.STARTING) {
+    return (
+      <div className="Container u-textCenter">
+        <h1 className="h3 u-mT-lg u-textCenter">Guess the Movie!</h1>
+        <hr />
         <Notification>
-          <p>Sorry, the <a href="https://developers.themoviedb.org/4/getting-started/authorization" target="blank">Moviedatabase API</a> seems to not be working currently</p>
-          <p>Please try again later.</p>
+          <h4 className="u-mT-lg">Get Ready!</h4>
+          <Timer
+            time={COUNTDOWN_TIME}
+            onTimeUp={() => {
+              dispatch(getMoviesAction());
+              setStatus(GameStatus.PLAYING)
+            }}
+            unformatted={true}
+            classes="h1 u-mB-0 u-textSuccess"
+            />
         </Notification>
-      );
-    }
+      </div>
+    )
+  }
 
-    const { currentQuestionIndex, currentPosterPosition, hint, shouldShowOptions, shouldShowHint } = this.state;
-    const currentQuestion = questionnaire[currentQuestionIndex];
-    let photoCropperProps: any = {
-      expectedImageWidth: IMAGE_WIDTH,
-      onMounted: this.saveImagePosition,
-    };
+  if (isLoading) {
+    return (
+      <Notification>
+        <p>Loading...</p>
+      </Notification>
+    )
+  }
 
-    /**
+  if (!questionnaire.length) {
+    return (
+      <Notification>
+        <p>Sorry, the <a href="https://developers.themoviedb.org/4/getting-started/authorization" target="blank">Moviedatabase API</a> seems to not be working currently</p>
+        <p>Please try again later.</p>
+      </Notification>
+    );
+  }
+
+  if (status === GameStatus.FINISHED) {
+    return (
+      <div className="Container">
+        <h1 className="h3 u-mT-lg u-textCenter">Guess the Movie!</h1>
+        <hr />
+        <Feedback
+          questionnaire={questionnaire}
+          currentQuestionIndex={currentQuestionIndex}
+          results={results}
+        />
+        <button className="Button Button--primary u-textCenter" onClick={resetGame}>Try again!</button>
+      </div>
+    );
+  }
+
+  const currentQuestion = questionnaire[currentQuestionIndex];
+  let photoCropperProps: any = {
+    expectedImageWidth: IMAGE_WIDTH,
+    onMounted: (currentPosterPosition: ImagePosition) => setCurrentPosterPosition(currentPosterPosition),
+  };
+
+  /**
      * This ensures that both the poster and the thumbnail would be cropped
      * the same way.
      */
-    if (currentPosterPosition) {
-      photoCropperProps = {
-        ...photoCropperProps,
-        imagePosition: setImagePosition(),
-      };
-    } else {
-      photoCropperProps = {
-        ...photoCropperProps,
-        imagePosition: currentPosterPosition,
-      };
-    }
+  if (currentPosterPosition) {
+    photoCropperProps = {
+      ...photoCropperProps,
+      imagePosition: setImagePosition(),
+    };
+  } else {
+    photoCropperProps = {
+      ...photoCropperProps,
+      imagePosition: currentPosterPosition,
+    };
+  }
 
-    const { results } = this.state;
+  return (
+    <div className="Container">
+      <h1 className="h3 u-mT-lg u-textCenter">Guess the Movie!</h1>
+      <hr />
+      <div className="Grid u-mT-md u-mB-md">
+        <div className="Grid-cell u-width1of2 u-textCenter">
+          <h4 className="u-textBold u-mB-sm">
+            <span className="icon icon-time"></span>
+            <span className="u-hiddenVisually">Time</span>
+          </h4>
+          <Timer
+            classes="h5 u-mB-0"
+            time={GAME_TIME}
+            onTimeUp={finishGame}
+            timeRunningOutClassesThreshold={10}
+            timeRunningOutClasses='u-textError u-textFlash u-textBold'
+          />
+        </div>
+        <div className="Grid-cell u-width1of2 u-textCenter">
+          <h4 className="u-textBold u-mB-sm">
+            <span className="icon icon-question"></span>
+            <span className="u-hiddenVisually">Question</span>
+          </h4>
+          <p className="h5 u-mB-0">{currentQuestionIndex + 1}/{questionnaire.length}</p>
+        </div>
+      </div>
 
-    if (status === GameStatus.FINISHED) {
-      return (
-        <div className="Container">
-          <h1 className="h3 u-mT-lg u-textCenter">Guess the Movie!</h1>
-          <hr />
+      <hr />
+
+      <div className="Grid u-mT-md u-mB-md u-flex u-flexAlignItemsStretch">
+        <div className="Grid-cell u-md-width2of3">
+          <Gallery
+            currentSlide={currentQuestionIndex}
+          >
+            {questionnaire && questionnaire.length > 0 && (
+              questionnaire.map(({ movie }: { movie: Movie}) => (
+                <PhotoCropper
+                  key={`gallery-poster-${movie.id}`}
+                  imageUrl={`${IMAGE_BASE_URL}${movie.poster_path}`}
+                  {...photoCropperProps}
+                />
+              ))
+            )}
+          </Gallery>
+        </div>
+        <div className="Grid-cell u-md-width1of3">
           <Feedback
             questionnaire={questionnaire}
             currentQuestionIndex={currentQuestionIndex}
             results={results}
           />
-          <button className="Button Button--primary u-textCenter" onClick={this.reset}>Try again!</button>
         </div>
-      );
-    }
-
-    return (
-      <div className="Container">
-        <h1 className="h3 u-mT-lg u-textCenter">Guess the Movie!</h1>
-        <hr />
-        <div className="Grid u-mT-md u-mB-md">
-          <div className="Grid-cell u-width1of2 u-textCenter">
-            <h4 className="u-textBold u-mB-sm">
-              <span className="icon icon-time"></span>
-              <span className="u-hiddenVisually">Time</span>
-            </h4>
-            <Timer
-              classes="h5 u-mB-0"
-              time={GAME_TIME}
-              onTimeUp={this.finishGame}
-              timeRunningOutClassesThreshold={10}
-              timeRunningOutClasses='u-textError u-textFlash u-textBold'
-            />
-          </div>
-          <div className="Grid-cell u-width1of2 u-textCenter">
-            <h4 className="u-textBold u-mB-sm">
-              <span className="icon icon-question"></span>
-              <span className="u-hiddenVisually">Question</span>
-            </h4>
-            <p className="h5 u-mB-0">{currentQuestionIndex + 1}/{questionnaire.length}</p>
-          </div>
-        </div>
-
-        <hr />
-
-        <div className="Grid u-mT-md u-mB-md u-flex u-flexAlignItemsStretch">
-          <div className="Grid-cell u-md-width2of3">
-            <Gallery
-              currentSlide={currentQuestionIndex}
-            >
-              {questionnaire && questionnaire.length > 0 && (
-                questionnaire.map(({ movie }: { movie: Movie}) => (
-                  <PhotoCropper
-                    key={`gallery-poster-${movie.id}`}
-                    imageUrl={`${IMAGE_BASE_URL}${movie.poster_path}`}
-                    {...photoCropperProps}
-                  />
-                ))
-              )}
-            </Gallery>
-          </div>
-          <div className="Grid-cell u-md-width1of3">
-            <Feedback
-              questionnaire={questionnaire}
-              currentQuestionIndex={currentQuestionIndex}
-              results={results}
-            />
-          </div>
-        </div>
-
-        <hr className="u-mT-md u-mB-md" />
-
-        {!shouldShowHint && <h4 className="u-textCenter">If you need help, just say "show options"</h4>}
-
-        {shouldShowHint && (
-          <div className="Alert Alert--info">
-            <h5 className="u-mB-0 Alert-icon">
-              <span className="icon icon-hint"></span>
-            </h5>
-            <p className="u-mB-0"><strong>Hint: </strong><span className="hint">{hint}</span></p>
-          </div>
-        )}
-
-        {shouldShowOptions && (
-          <AnswerList
-            answers={currentQuestion.answers}
-            onSelect={this.onSelect}
-          />
-        )}
       </div>
-    )
-  }
-}
 
-function mapStateToProps(state: RootState): StateProps {
-  return {
-    questionnaire: getQuestionnaire(state),
-    isLoadingMovies: isLoadingMovies(state),
-  };
-}
+      <hr className="u-mT-md u-mB-md" />
 
-function mapDispatchToProps(dispatch: Dispatch<any>): DispatchProps {
-  return {
-    getMovies: () => dispatch(getMoviesAction()),
-  };
-}
+      {!shouldShowHint && <h4 className="u-textCenter">If you need help, just say "show options"</h4>}
 
-export const Game = connect<StateProps, any, Props, any>
-  (mapStateToProps, mapDispatchToProps)(GameComponent)
+      {shouldShowHint && (
+        <div className="Alert Alert--info">
+          <h5 className="u-mB-0 Alert-icon">
+            <span className="icon icon-hint"></span>
+          </h5>
+          <p className="u-mB-0"><strong>Hint: </strong><span className="hint">{hint}</span></p>
+        </div>
+      )}
+
+      {shouldShowOptions && (
+        <AnswerList
+          answers={currentQuestion.answers}
+          onSelect={onSelect}
+        />
+      )}
+    </div>
+  );
+};
