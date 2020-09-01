@@ -3,21 +3,21 @@ import ReactGA from 'react-ga';
 import { useSelector, useDispatch } from 'react-redux';
 import FuzzySet from 'fuzzyset.js';
 
-import { isLoadingMovies, getQuestionnaire, Question } from '../store/selectors/movies';
-import { getMovies as getMoviesAction } from '../store/actions/movies';
+import { isLoadingMovies, getQuestionnaire, Question } from 'store/selectors/movies';
+import { getMovies as getMoviesAction } from 'store/actions/movies';
 
-import { Movie } from '../store/reducers/movies';
+import { Movie } from 'store/reducers/movies';
 
-import { IMAGE_BASE_URL, IMAGE_WIDTH, GAME_TIME } from '../constants/config';
-import { Timer } from '../components/game/Timer';
-import { GameStatus, GameError } from '../constants/game';
-import { PhotoCropper, ImagePosition, setImagePosition } from '../components/game/PhotoCropper';
-import { Gallery } from '../components/Gallery';
-import { AnswerList, Answer } from '../components/game/AnswerList';
-import { Feedback } from '../components/game/Feedback';
-import { Notification } from '../components/Notification';
-import { generateRandomNumberFromRange } from '../tools/util';
-import { formatForAnnyang } from '../tools/game';
+import { IMAGE_BASE_URL, IMAGE_WIDTH, GAME_TIME } from 'constants/config';
+import { Timer } from 'components/game/Timer';
+import { GameStatus, GameError } from 'constants/game';
+import { PhotoCropper, ImagePosition, setImagePosition } from 'components/game/PhotoCropper';
+import { Gallery } from 'components/Gallery';
+import { AnswerList, Answer } from 'components/game/AnswerList';
+import { Feedback } from 'components/game/Feedback';
+import { Notification } from 'components/Notification';
+import { generateRandomNumberFromRange } from 'tools/util';
+import { formatForAnnyang } from 'tools/game';
 
 export interface Result {
   movie: Movie;
